@@ -2,31 +2,24 @@ package com.layer.sdkquickstart;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.Context;
 import android.os.StrictMode;
 
-import com.layer.sdkquickstart.util.AuthenticationProvider;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.listeners.LayerAuthenticationListener;
+import com.layer.sdkquickstart.util.AuthenticationProvider;
+import com.layer.sdkquickstart.util.CustomEnvironment;
+import com.layer.sdkquickstart.util.Log;
 
 /**
- * App provides static access to a LayerClient. It also provides an AuthenticationProvider and
- * ParticipantProvider to use with the LayerClient.
+ * App provides static access to a LayerClient. It also provides an AuthenticationProvider to use
+ * with the LayerClient
  *
- * App.Flavor allows build variants to target different environments, such as the standard Demo and the
- * open source Rails Identity Provider.  Switch flavors with the Android Studio `Build Variant` tab.
- * When using a flavor besides the Demo you must manually set your Layer App ID and GCM Sender
- * ID in that flavor's Flavor.java.
- *
- * @see com.layer.sdkquickstart.App.Flavor
- * @see com.layer.sdkquickstart.flavor.Flavor
  * @see LayerClient
  * @see AuthenticationProvider
  */
 public class App extends Application {
 
     private static Application sInstance;
-    private static Flavor sFlavor = new com.layer.sdkquickstart.flavor.Flavor();
 
     private static LayerClient sLayerClient;
     private static AuthenticationProvider sAuthProvider;
@@ -116,20 +109,24 @@ public class App extends Application {
     //==============================================================================================
 
     /**
-     * Gets or creates a LayerClient, using a default set of LayerClient.Options and flavor-specific
-     * App ID and Options from the `generateLayerClient` method.  Returns `null` if the flavor was
-     * unable to create a LayerClient (due to no App ID, etc.).
+     * Gets or creates a LayerClient, using a default set of LayerClient.Options and the App ID from
+     * the selected environment. Returns null if no App ID has been set yet.
      *
-     * @return New or existing LayerClient, or `null` if a LayerClient could not be constructed.
-     * @see Flavor#generateLayerClient(Context, LayerClient.Options)
+     * @return New or existing LayerClient.
      */
     public static LayerClient getLayerClient() {
         if (sLayerClient == null) {
-            // Allow flavor to specify Layer App ID and customize Options.
-            sLayerClient = sFlavor.generateLayerClient(sInstance, new LayerClient.Options());
 
-            // Flavor was unable to generate Layer Client (no App ID, etc.)
-            if (sLayerClient == null) return null;
+            String layerAppId = getLayerAppId();
+            if (layerAppId == null) {
+                if (Log.isLoggable(Log.ERROR)) Log.e(sInstance.getString(R.string.app_id_required));
+                return null;
+            }
+
+            LayerClient.Options options = new LayerClient.Options();
+            // Uncomment the following line to enable push notifications from FCM
+            // options.useFirebaseCloudMessaging(true);
+            sLayerClient = LayerClient.newInstance(sInstance, layerAppId, options);
 
             /* Register AuthenticationProvider for handling authentication challenges */
             sLayerClient.registerAuthenticationListener(getAuthenticationProvider());
@@ -138,30 +135,17 @@ public class App extends Application {
     }
 
     public static String getLayerAppId() {
-        return sFlavor.getLayerAppId();
+        return CustomEnvironment.getLayerAppId();
     }
 
     public static AuthenticationProvider getAuthenticationProvider() {
         if (sAuthProvider == null) {
-            sAuthProvider = sFlavor.generateAuthenticationProvider(sInstance);
+            sAuthProvider = new DefaultAuthenticationProvider(sInstance);
 
             // If we have cached credentials, try authenticating with Layer
             LayerClient layerClient = getLayerClient();
             if (layerClient != null && sAuthProvider.hasCredentials()) layerClient.authenticate();
         }
         return sAuthProvider;
-    }
-
-    /**
-     * Flavor is used to switch environments.
-     *
-     * @see com.layer.sdkquickstart.flavor.Flavor
-     */
-    public interface Flavor {
-        String getLayerAppId();
-
-        LayerClient generateLayerClient(Context context, LayerClient.Options options);
-
-        AuthenticationProvider generateAuthenticationProvider(Context context);
     }
 }

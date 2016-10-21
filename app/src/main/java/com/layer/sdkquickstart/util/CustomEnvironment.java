@@ -1,4 +1,4 @@
-package com.layer.sdkquickstart.flavor.util;
+package com.layer.sdkquickstart.util;
 
 import android.content.Context;
 import android.view.View;
@@ -7,7 +7,6 @@ import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
 import com.layer.sdkquickstart.App;
-import com.layer.sdkquickstart.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -52,8 +51,8 @@ public class CustomEnvironment {
 
     public static Spinner createSpinner(Context context) {
         Set<String> environmentNames = getNames();
-        // Don't create a spinner if there are 0 or 1 environments
-        if (environmentNames == null || environmentNames.size() < 2) return null;
+        // Don't create a spinner if there are no environments
+        if (environmentNames == null || environmentNames.size() < 1) return null;
 
         List<String> namesList = new ArrayList<>(environmentNames);
         Collections.sort(namesList);

@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 
 <resources>
+    <string name="app_name">Layer SDK Quickstart</string>
+    <string name="app_id_required">Please set your Layer App ID in `layer_environments.json`.  You can get your Layer App ID from the developer dashboard.</string>
+
     <string name="action_settings">Settings</string>
     <string name="action_details">Conversation Details</string>
     <string name="action_sendlogs">Send Debug Info</string>
@@ -89,5 +92,9 @@
     <string name="typing_indicator_format">%s is typing…</string>
 
     <string name="push_notification_no_content_title">New message (tap to sync)</string>
+
+    <string name="login_email_hint">Email</string>
+    <string name="login_password_hint">Password</string>
+    <string name="login_dialog_message">Logging In&#8230;</string>
 
 </resources>

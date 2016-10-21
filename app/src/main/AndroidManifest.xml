@@ -54,7 +54,13 @@
             android:windowSoftInputMode="adjustResize">
         </activity>
 
+        <!-- Activity: Select participants for a Conversation -->
         <activity android:name="com.layer.sdkquickstart.SelectParticipantsActivity"/>
+
+        <!-- Activity:Log in using the Authentication Provider -->
+        <activity
+            android:name=".LoginActivity"
+            android:windowSoftInputMode="stateAlwaysVisible|adjustResize"/>
 
 
         <!-- Receiver: Our app notification handling -->
@@ -75,7 +81,7 @@
             </intent-filter>
         </receiver>
 
-        <!--Receiver: Layer SDK FCM handling -->
+        <!-- Services: Layer SDK FCM handling -->
         <service
             android:name="com.layer.sdk.services.LayerFcmService"
             android:exported="false">

@@ -1,25 +1,15 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion "24.0.3"
+    compileSdkVersion 25
+    buildToolsVersion "25.0.0"
 
     defaultConfig {
         applicationId "com.layer.sdkquickstart"
         minSdkVersion 14
-        targetSdkVersion 24
+        targetSdkVersion 25
         versionCode 1
         versionName "$versionCode"
-    }
-
-    productFlavors {
-        providerrails {
-            applicationId = defaultConfig.applicationId + ".providerrails"
-        }
-
-        providerdemo {
-            applicationId = defaultConfig.applicationId + ".providerdemo"
-        }
     }
 
     buildTypes {
@@ -31,18 +21,15 @@ android {
 }
 
 dependencies {
-    compile 'com.android.support:appcompat-v7:24.2.1'
-    compile 'com.android.support:design:24.2.1'
-    compile 'com.android.support:gridlayout-v7:24.2.1'
+    compile 'com.android.support:appcompat-v7:25.0.0'
+    compile 'com.android.support:design:25.0.0'
+    compile 'com.android.support:gridlayout-v7:25.0.0'
 
     // This includes Firebase Messaging. To remove push notification support add
     //    exclude group: 'com.google.firebase', module: 'firebase-messaging'
     //    exclude group: 'com.google.firebase', module: 'firebase-core'
     compile ('com.layer.sdk:layer-sdk:0.23.1')
     compile 'org.slf4j:slf4j-nop:1.5.8'
-
-    // Flavor-specific dependencies
-    providerdemoCompile 'com.google.android.gms:play-services-vision:9.6.1'
 }
 
 apply plugin: 'com.google.gms.google-services'

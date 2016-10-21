@@ -8,7 +8,7 @@
       "client_info": {
         "mobilesdk_app_id": "",
         "android_client_info": {
-          "package_name": "com.layer.sdkquickstart.providerrails"
+          "package_name": "com.layer.sdkquickstart"
         }
       },
       "oauth_client": [],

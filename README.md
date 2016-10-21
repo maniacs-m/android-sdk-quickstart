@@ -7,13 +7,12 @@ The SDK Quickstart app is a minimal messaging app designed to provide a starting
 * Import the project into Android Studio.
 * Enter your Layer App ID in the `layer_environments.json` file. This can be obtained from the Layer developer console.
 * Enter your Layer Identity Provider URL in the `layer_environments.json` file.
-* Set the build variant to use `providerrailsDebug`.
 
 ##<a name="enabling-push-notifications"></a>Enabling push notifications
 Push notifications are disabled by default to ease initial setup. To enable them, follow these steps:
  * Generate a JSON configuration file for FCM using the Firebase developers console. There is a tutorial here: https://docs.layer.com/sdk/android/push#setting-up-push-with-layer.
  * Replace the `google-service.json` file in this project with the generated one.
- * In the active `Flavor.java` class, set the Layer SDK to use FCM by changing the boolean passed to `options.useFirebaseCloudMessaging()` to true. This call is in the method `generateLayerClient()`.
+ * In `App.java`, set the Layer SDK to use FCM by uncommenting the line `options.useFirebaseCloudMessaging(true)` in the method `getLayerClient()`.
 
 ##<a name="structure"></a>Structure
 
@@ -26,19 +25,11 @@ Push notifications are disabled by default to ease initial setup. To enable them
   * **SettingsActivity:** Global application settings.
   * **ConversationSettingsActivity:** Settings for a particular Conversation.
 * **PushNotificationReceiver:** Handles `com.layer.sdk.PUSH` Intents and displays notifications.
-* **AuthenticationProvider:** Interface used to authenticate users.  Default implementations are provided by gradle `flavors`; see *Build Variants* below.
+* **AuthenticationProvider:** Interface used to authenticate users. A default implementation is provided.
 
 ##<a name="identity-providers"></a>Identity Providers
 
-The SDK Quickstart uses the `AuthenticationProvider` interface to authenticate with various backends.  Additional identity providers can be integrated by implementing `AuthenticationProvider` and using a custom login Activity, similar to the provided flavors below.
-
-###<a name="build-variants"></a>Provided Flavors
-Two default implementations are provided via [product flavors](http://developer.android.com/tools/building/configuring-gradle.html#workBuildVariants), where each flavor implements a custom `AuthenticationProvider` and provides login Activities for gathering their required credentials:
-
-1. **demoprovider:** For use in the [Layer Atlas demo](https://getatlas.layer.com/android).  This authentication flow utilizes a QR-Code scanner to capture a Layer App ID from the Layer developer dashboard.  The scanner can be bypassed by supplying your Quickstart App ID in the `App.LAYER_APP_ID` constant.
-2. **railsprovider:** For use with the deployable [Rails Provider](https://github.com/layerhq/layer-identity-provider) backend.
-
-In Android Studio, switch flavors using Build Variants, typically in the side tab on the lower left of the Android Studio window.
+The SDK Quickstart uses the `AuthenticationProvider` interface to authenticate with various backends.  Additional identity providers can be integrated by implementing `AuthenticationProvider` and using a custom login Activity, or by modifying the existing `BasicAuthenticationProvider`.
 
 ##<a name="contributing"></a>Contributing
 The SDK Quickstart is an Open Source project maintained by Layer. Feedback and contributions are always welcome and the maintainers try to process patches as quickly as possible. Feel free to open up a Pull Request or Issue on Github.
