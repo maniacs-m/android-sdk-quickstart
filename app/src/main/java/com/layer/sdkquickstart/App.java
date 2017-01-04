@@ -140,7 +140,14 @@ public class App extends Application {
 
     public static AuthenticationProvider getAuthenticationProvider() {
         if (sAuthProvider == null) {
-            sAuthProvider = new DefaultAuthenticationProvider(sInstance);
+            switch (BuildConfig.FLAVOR) {
+                case "instaStart":
+                    sAuthProvider = new InstastartAuthenticationProvider(sInstance);
+                case "defaultConfig":
+                    sAuthProvider = new DefaultAuthenticationProvider(sInstance);
+                default:
+                    sAuthProvider = new DefaultAuthenticationProvider(sInstance);
+            }
 
             // If we have cached credentials, try authenticating with Layer
             LayerClient layerClient = getLayerClient();
