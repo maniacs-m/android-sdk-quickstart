@@ -143,8 +143,8 @@ public class App extends Application {
             switch (BuildConfig.FLAVOR) {
                 case "instaStart":
                     sAuthProvider = new InstastartAuthenticationProvider(sInstance);
+                    break;
                 case "defaultConfig":
-                    sAuthProvider = new DefaultAuthenticationProvider(sInstance);
                 default:
                     sAuthProvider = new DefaultAuthenticationProvider(sInstance);
             }
