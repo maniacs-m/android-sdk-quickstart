@@ -28,7 +28,7 @@ dependencies {
     // This includes Firebase Messaging. To remove push notification support add
     //    exclude group: 'com.google.firebase', module: 'firebase-messaging'
     //    exclude group: 'com.google.firebase', module: 'firebase-core'
-    compile ('com.layer.sdk:layer-sdk:0.23.9')
+    compile ('com.layer.sdk:layer-sdk:0.23.10')
     compile 'org.slf4j:slf4j-nop:1.5.8'
 }
 
