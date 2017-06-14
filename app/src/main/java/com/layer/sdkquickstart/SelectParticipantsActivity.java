@@ -20,8 +20,6 @@ import com.layer.sdkquickstart.util.IdentityDisplayNameComparator;
 import com.layer.sdkquickstart.util.IdentityUtils;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.messaging.Identity;
-import com.layer.sdk.query.Predicate;
-import com.layer.sdk.query.Query;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -108,9 +106,10 @@ public class SelectParticipantsActivity extends BaseActivity {
         if (mCheckedParticipants != null) {
             for (int i = 0; i < sortedIdentities.size(); i++) {
                 Identity identity = sortedIdentities.get(i);
-                if (mCheckedParticipants.contains(identity.getUserId())) {
-                    mParticipantList.setItemChecked(i, true);
-                }
+                // TODO requires identity support
+//                if (mCheckedParticipants.contains(identity.getUserId())) {
+//                    mParticipantList.setItemChecked(i, true);
+//                }
             }
         }
     }
@@ -133,7 +132,8 @@ public class SelectParticipantsActivity extends BaseActivity {
             int checkedPosition = positions.keyAt(i);
             Identity participant = mParticipantAdapter.getItem(checkedPosition);
             if (participant != null) {
-                participantIds.add(participant.getUserId());
+                // TODO requires identity support
+//                participantIds.add(participant.getUserId());
             }
         }
         String[] participantIdArray = new String[participantIds.size()];
@@ -163,25 +163,26 @@ public class SelectParticipantsActivity extends BaseActivity {
         }
 
         private void fetchIdentities(final IdentityFetcherCallback callback) {
-            Identity currentUser = mLayerClient.getAuthenticatedUser();
-            Query.Builder<Identity> builder = Query.builder(Identity.class);
-            if (currentUser != null) {
-                builder.predicate(new Predicate(Identity.Property.USER_ID, Predicate.Operator.NOT_EQUAL_TO, currentUser.getUserId()));
-            }
-            final Query<Identity> identitiesQuery = builder.build();
-
-            new AsyncTask<Void, Void, List<Identity>>() {
-
-                @Override
-                protected List<Identity> doInBackground(Void... params) {
-                    return mLayerClient.executeQuery(identitiesQuery, Query.ResultType.OBJECTS);
-                }
-
-                @Override
-                protected void onPostExecute(List<Identity> identities) {
-                    callback.identitiesFetched(new HashSet<>(identities));
-                }
-            }.execute();
+            // TODO requires identity support
+//            Identity currentUser = mLayerClient.getAuthenticatedUser();
+//            Query.Builder<Identity> builder = Query.builder(Identity.class);
+//            if (currentUser != null) {
+//                builder.predicate(new Predicate(Identity.Property.USER_ID, Predicate.Operator.NOT_EQUAL_TO, currentUser.getUserId()));
+//            }
+//            final Query<Identity> identitiesQuery = builder.build();
+//
+//            new AsyncTask<Void, Void, List<Identity>>() {
+//
+//                @Override
+//                protected List<Identity> doInBackground(Void... params) {
+//                    return mLayerClient.executeQuery(identitiesQuery, Query.ResultType.OBJECTS);
+//                }
+//
+//                @Override
+//                protected void onPostExecute(List<Identity> identities) {
+//                    callback.identitiesFetched(new HashSet<>(identities));
+//                }
+//            }.execute();
         }
 
         interface IdentityFetcherCallback {

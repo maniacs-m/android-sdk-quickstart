@@ -60,7 +60,7 @@ public abstract class BaseActivity extends AppCompatActivity {
         if (client.isAuthenticated()) {
             client.connect();
         } else {
-            client.authenticate();
+            client.requestAuthenticationNonce();
         }
     }
 

@@ -3,15 +3,15 @@ package com.layer.sdkquickstart.util;
 import android.app.Activity;
 
 import com.layer.sdk.LayerClient;
-import com.layer.sdk.listeners.LayerAuthenticationListener;
+import com.layer.sdk.authentication.AuthenticationListener;
 
 /**
- * AuthenticationProvider implementations authenticate users with backend "Identity Providers."
+ * AuthenticationProvider implementations requestAuthenticationNonce users with backend "Identity Providers."
  *
  * @param <Tcredentials> Session credentials for this AuthenticationProvider used to resume an
  *                       authenticated session.
  */
-public interface AuthenticationProvider<Tcredentials> extends LayerAuthenticationListener.BackgroundThread.Weak {
+public interface AuthenticationProvider<Tcredentials> extends AuthenticationListener {
 
     /**
      * Sets this AuthenticationProvider's credentials.  Credentials should be cached to handle

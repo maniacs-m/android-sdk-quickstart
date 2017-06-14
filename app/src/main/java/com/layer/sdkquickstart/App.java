@@ -5,7 +5,7 @@ import android.app.Application;
 import android.os.StrictMode;
 
 import com.layer.sdk.LayerClient;
-import com.layer.sdk.listeners.LayerAuthenticationListener;
+import com.layer.sdk.authentication.AuthenticationListener;
 import com.layer.sdkquickstart.util.AuthenticationProvider;
 import com.layer.sdkquickstart.util.CustomEnvironment;
 import com.layer.sdkquickstart.util.Log;
@@ -36,7 +36,7 @@ public class App extends Application {
         // Enable verbose logging and strict mode in debug builds
         if (BuildConfig.DEBUG) {
             com.layer.sdkquickstart.util.Log.setAlwaysLoggable(true);
-            LayerClient.setLoggingEnabled(this, true);
+            LayerClient.setLoggingEnabled(true);
 
             StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
                     .detectDiskReads()
@@ -50,9 +50,6 @@ public class App extends Application {
                     .penaltyLog()
                     .build());
         }
-
-        // Allow the LayerClient to track app state
-        LayerClient.applicationCreated(this);
 
         sInstance = this;
     }
@@ -93,10 +90,10 @@ public class App extends Application {
         getAuthenticationProvider()
                 .setCredentials(credentials)
                 .setCallback(callback);
-        client.authenticate();
+        client.requestAuthenticationNonce();
     }
 
-    public static void deauthenticate(LayerAuthenticationListener deauthenticationListener) {
+    public static void deauthenticate(AuthenticationListener deauthenticationListener) {
         LayerClient client = getLayerClient();
         if (client != null) {
             client.registerAuthenticationListener(deauthenticationListener);
@@ -123,10 +120,10 @@ public class App extends Application {
                 return null;
             }
 
-            LayerClient.Options options = new LayerClient.Options();
+            LayerClient.Options options = new LayerClient.Options.Builder().build();
             // Uncomment the following line to enable push notifications from FCM
             // options.useFirebaseCloudMessaging(true);
-            sLayerClient = LayerClient.newInstance(sInstance, layerAppId, options);
+            sLayerClient = LayerClient.newInstance(layerAppId, options);
 
             /* Register AuthenticationProvider for handling authentication challenges */
             sLayerClient.registerAuthenticationListener(getAuthenticationProvider());
@@ -144,7 +141,7 @@ public class App extends Application {
 
             // If we have cached credentials, try authenticating with Layer
             LayerClient layerClient = getLayerClient();
-            if (layerClient != null && sAuthProvider.hasCredentials()) layerClient.authenticate();
+            if (layerClient != null && sAuthProvider.hasCredentials()) layerClient.requestAuthenticationNonce();
         }
         return sAuthProvider;
     }

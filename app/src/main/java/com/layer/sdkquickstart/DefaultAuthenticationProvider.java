@@ -1,16 +1,18 @@
 package com.layer.sdkquickstart;
 
+import static com.layer.sdkquickstart.util.Util.streamToString;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.widget.Toast;
 
-import com.layer.sdkquickstart.util.CustomEnvironment;
-import com.layer.sdkquickstart.util.AuthenticationProvider;
-import com.layer.sdkquickstart.util.Log;
 import com.layer.sdk.LayerClient;
-import com.layer.sdk.exceptions.LayerException;
+import com.layer.sdk.authentication.AuthenticationChallengeListener;
+import com.layer.sdkquickstart.util.AuthenticationProvider;
+import com.layer.sdkquickstart.util.CustomEnvironment;
+import com.layer.sdkquickstart.util.Log;
 
 import org.json.JSONObject;
 
@@ -20,9 +22,8 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import static com.layer.sdkquickstart.util.Util.streamToString;
-
-public class DefaultAuthenticationProvider implements AuthenticationProvider<DefaultAuthenticationProvider.Credentials> {
+public class DefaultAuthenticationProvider implements AuthenticationProvider<DefaultAuthenticationProvider.Credentials>,
+        AuthenticationChallengeListener {
     private static final String TAG = DefaultAuthenticationProvider.class.getSimpleName();
 
     private final SharedPreferences mPreferences;
@@ -61,6 +62,7 @@ public class DefaultAuthenticationProvider implements AuthenticationProvider<Def
         if (Log.isLoggable(Log.VERBOSE)) Log.v("Deauthenticated with Layer");
     }
 
+
     @Override
     public void onAuthenticationChallenge(LayerClient layerClient, String nonce) {
         if (Log.isLoggable(Log.VERBOSE)) Log.v("Received challenge: " + nonce);
@@ -68,8 +70,8 @@ public class DefaultAuthenticationProvider implements AuthenticationProvider<Def
     }
 
     @Override
-    public void onAuthenticationError(LayerClient layerClient, LayerException e) {
-        String error = "Failed to authenticate with Layer: " + e.getMessage();
+    public void onAuthenticationError(LayerClient layerClient, Exception e) {
+        String error = "Failed to requestAuthenticationNonce with Layer: " + e.getMessage();
         if (Log.isLoggable(Log.ERROR)) Log.e(error, e);
         if (mCallback != null) mCallback.onError(this, error);
     }
@@ -83,7 +85,7 @@ public class DefaultAuthenticationProvider implements AuthenticationProvider<Def
         }
 
         if (layerAppId == null && !CustomEnvironment.hasEnvironments()) {
-            // With no Layer App ID (and no CustomEnvironment) we can't authenticate: bail out.
+            // With no Layer App ID (and no CustomEnvironment) we can't requestAuthenticationNonce: bail out.
             if (Log.isLoggable(Log.ERROR)) Log.v("No Layer App ID set");
             Toast.makeText(from, R.string.app_id_required, Toast.LENGTH_LONG).show();
             return true;
@@ -204,7 +206,7 @@ public class DefaultAuthenticationProvider implements AuthenticationProvider<Def
             // Answer authentication challenge.
             String identityToken = json.optString("layer_identity_token", null);
             if (Log.isLoggable(Log.VERBOSE)) Log.v("Got identity token: " + identityToken);
-            layerClient.answerAuthenticationChallenge(identityToken);
+            layerClient.authenticate(identityToken);
         } catch (Exception e) {
             String error = "Error when authenticating with provider: " + e.getMessage();
             if (Log.isLoggable(Log.ERROR)) Log.e(error, e);

@@ -89,7 +89,7 @@ public class LoginActivity extends AppCompatActivity {
                     public void onError(AuthenticationProvider provider, final String error) {
                         progressDialog.dismiss();
                         if (Log.isLoggable(Log.ERROR)) {
-                            Log.e("Failed to authenticate as `" + email + "`: " + error);
+                            Log.e("Failed to requestAuthenticationNonce as `" + email + "`: " + error);
                         }
                         runOnUiThread(new Runnable() {
                             @Override

@@ -1,1 +1,3 @@
-include ':app'
+include ':app', ':sdk'
+
+project(":sdk").projectDir = file("layer-recon-android-sdk/sdk")

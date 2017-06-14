@@ -6,14 +6,13 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 
+import com.layer.sdk.authentication.AuthenticationListener;
 import com.layer.sdkquickstart.util.Log;
 import com.layer.sdk.LayerClient;
-import com.layer.sdk.exceptions.LayerException;
-import com.layer.sdk.listeners.LayerAuthenticationListener;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-public class ResumeActivity extends AppCompatActivity implements LayerAuthenticationListener {
+public class ResumeActivity extends AppCompatActivity implements AuthenticationListener {
     public static final String EXTRA_LOGGED_IN_ACTIVITY_CLASS_NAME = "loggedInActivity";
     public static final String EXTRA_LOGGED_OUT_ACTIVITY_CLASS_NAME = "loggedOutActivity";
 
@@ -32,7 +31,8 @@ public class ResumeActivity extends AppCompatActivity implements LayerAuthentica
     @Override
     protected void onResume() {
         super.onResume();
-        App.getLayerClient().registerAuthenticationListener(this).authenticate();
+        // TODO this authenticate call should not be necessary anymore
+//        App.getLayerClient().registerAuthenticationListener(this).authenticate();
         try {
             mLoggedInActivity.set((Class<? extends Activity>) Class.forName(getIntent().getStringExtra(EXTRA_LOGGED_IN_ACTIVITY_CLASS_NAME)));
             mLoggedOutActivity.set((Class<? extends Activity>) Class.forName(getIntent().getStringExtra(EXTRA_LOGGED_OUT_ACTIVITY_CLASS_NAME)));
@@ -45,7 +45,7 @@ public class ResumeActivity extends AppCompatActivity implements LayerAuthentica
 
     @Override
     protected void onPause() {
-        App.getLayerClient().unregisterAuthenticationListener(this);
+//        App.getLayerClient().unregisterAuthenticationListener(this);
         super.onPause();
     }
 
@@ -60,12 +60,7 @@ public class ResumeActivity extends AppCompatActivity implements LayerAuthentica
     }
 
     @Override
-    public void onAuthenticationChallenge(LayerClient layerClient, String s) {
-
-    }
-
-    @Override
-    public void onAuthenticationError(LayerClient layerClient, LayerException e) {
+    public void onAuthenticationError(LayerClient layerClient, Exception e) {
         startActivity(mLoggedOutActivity.get());
     }
 
