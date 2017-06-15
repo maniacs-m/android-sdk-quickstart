@@ -57,6 +57,8 @@ public class LoginActivity extends AppCompatActivity {
             customEnvironments.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
             ((ViewGroup) mPassword.getParent()).addView(customEnvironments);
         }
+
+        App.getLayerClient().connect();
     }
 
     @Override

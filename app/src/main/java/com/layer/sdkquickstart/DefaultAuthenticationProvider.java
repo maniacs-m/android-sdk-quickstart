@@ -9,7 +9,6 @@ import android.content.SharedPreferences;
 import android.widget.Toast;
 
 import com.layer.sdk.LayerClient;
-import com.layer.sdk.authentication.AuthenticationChallengeListener;
 import com.layer.sdkquickstart.util.AuthenticationProvider;
 import com.layer.sdkquickstart.util.CustomEnvironment;
 import com.layer.sdkquickstart.util.Log;
@@ -22,8 +21,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class DefaultAuthenticationProvider implements AuthenticationProvider<DefaultAuthenticationProvider.Credentials>,
-        AuthenticationChallengeListener {
+public class DefaultAuthenticationProvider implements AuthenticationProvider<DefaultAuthenticationProvider.Credentials> {
     private static final String TAG = DefaultAuthenticationProvider.class.getSimpleName();
 
     private final SharedPreferences mPreferences;

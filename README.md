@@ -8,6 +8,12 @@ The SDK Quickstart app is a minimal messaging app designed to provide a starting
 * Enter your Layer App ID in the `layer_environments.json` file. This can be obtained from the Layer developer console.
 * Enter your Layer Identity Provider URL in the `layer_environments.json` file.
 
+##<a name="run-on-standalone"></a>Running on standalone
+
+* Disable hostname validation by setting `LayerClient.Options.runAgainstStandalone(true)`
+* Modify endpoints: Use `https://{standalone-ip}:5556/certificates` for certs and `https://{standalone-ip}:9933/websocket` for sync
+* Use app ID `layer:///apps/staging/00000000-0000-1000-8000-000000000000`
+
 ##<a name="enabling-push-notifications"></a>Enabling push notifications
 Push notifications are disabled by default to ease initial setup. To enable them, follow these steps:
  * Generate a JSON configuration file for FCM using the Firebase developers console. There is a tutorial here: https://docs.layer.com/sdk/android/push#setting-up-push-with-layer.

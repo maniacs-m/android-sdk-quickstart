@@ -5,6 +5,7 @@ import android.app.Application;
 import android.os.StrictMode;
 
 import com.layer.sdk.LayerClient;
+import com.layer.sdk.authentication.AuthenticationChallengeListener;
 import com.layer.sdk.authentication.AuthenticationListener;
 import com.layer.sdkquickstart.util.AuthenticationProvider;
 import com.layer.sdkquickstart.util.CustomEnvironment;
@@ -52,6 +53,13 @@ public class App extends Application {
         }
 
         sInstance = this;
+
+        LayerClient.registerAuthenticationChallengeListener(new AuthenticationChallengeListener() {
+            @Override
+            public void onAuthenticationChallenge(LayerClient layerClient, String nonce) {
+                sAuthProvider.onAuthenticationChallenge(layerClient, nonce);
+            }
+        });
     }
 
     public static Application getInstance() {
@@ -120,7 +128,10 @@ public class App extends Application {
                 return null;
             }
 
-            LayerClient.Options options = new LayerClient.Options.Builder().build();
+            LayerClient.Options options = new LayerClient.Options.Builder()
+                    .runAgainstStandalone(true)
+                    .customEndpoint(null, "https://35.184.171.16:5556/certificates", "https://35.184.171.16:9933/websocket")
+                    .build();
             // Uncomment the following line to enable push notifications from FCM
             // options.useFirebaseCloudMessaging(true);
             sLayerClient = LayerClient.newInstance(layerAppId, options);
@@ -139,9 +150,9 @@ public class App extends Application {
         if (sAuthProvider == null) {
             sAuthProvider = new DefaultAuthenticationProvider(sInstance);
 
-            // If we have cached credentials, try authenticating with Layer
-            LayerClient layerClient = getLayerClient();
-            if (layerClient != null && sAuthProvider.hasCredentials()) layerClient.requestAuthenticationNonce();
+//            // If we have cached credentials, try authenticating with Layer
+//            LayerClient layerClient = getLayerClient();
+//            if (layerClient != null && sAuthProvider.hasCredentials()) layerClient.requestAuthenticationNonce();
         }
         return sAuthProvider;
     }

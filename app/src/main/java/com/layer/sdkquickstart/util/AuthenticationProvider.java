@@ -3,6 +3,7 @@ package com.layer.sdkquickstart.util;
 import android.app.Activity;
 
 import com.layer.sdk.LayerClient;
+import com.layer.sdk.authentication.AuthenticationChallengeListener;
 import com.layer.sdk.authentication.AuthenticationListener;
 
 /**
@@ -11,7 +12,8 @@ import com.layer.sdk.authentication.AuthenticationListener;
  * @param <Tcredentials> Session credentials for this AuthenticationProvider used to resume an
  *                       authenticated session.
  */
-public interface AuthenticationProvider<Tcredentials> extends AuthenticationListener {
+public interface AuthenticationProvider<Tcredentials> extends AuthenticationListener,
+        AuthenticationChallengeListener {
 
     /**
      * Sets this AuthenticationProvider's credentials.  Credentials should be cached to handle
