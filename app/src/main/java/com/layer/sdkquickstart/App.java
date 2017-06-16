@@ -5,7 +5,6 @@ import android.app.Application;
 import android.os.StrictMode;
 
 import com.layer.sdk.LayerClient;
-import com.layer.sdk.authentication.AuthenticationChallengeListener;
 import com.layer.sdk.authentication.AuthenticationListener;
 import com.layer.sdkquickstart.util.AuthenticationProvider;
 import com.layer.sdkquickstart.util.CustomEnvironment;
@@ -20,10 +19,8 @@ import com.layer.sdkquickstart.util.Log;
  */
 public class App extends Application {
 
-    private static Application sInstance;
-
-    private static LayerClient sLayerClient;
-    private static AuthenticationProvider sAuthProvider;
+    private LayerClient mLayerClient;
+    private AuthenticationProvider mAuthProvider;
 
 
     //==============================================================================================
@@ -52,18 +49,11 @@ public class App extends Application {
                     .build());
         }
 
-        sInstance = this;
+        mAuthProvider = new DefaultAuthenticationProvider(this);
 
-        LayerClient.registerAuthenticationChallengeListener(new AuthenticationChallengeListener() {
-            @Override
-            public void onAuthenticationChallenge(LayerClient layerClient, String nonce) {
-                sAuthProvider.onAuthenticationChallenge(layerClient, nonce);
-            }
-        });
-    }
-
-    public static Application getInstance() {
-        return sInstance;
+        // Forward challenges to the auth provider
+        LayerClient.registerAuthenticationChallengeListener(
+                (layerClient, nonce) -> mAuthProvider.onAuthenticationChallenge(layerClient, nonce));
     }
 
 
@@ -78,7 +68,7 @@ public class App extends Application {
      * @param from Activity to route from.
      * @return `true` if the user has been routed to another Activity, or `false` otherwise.
      */
-    public static boolean routeLogin(Activity from) {
+    public boolean routeLogin(Activity from) {
         return getAuthenticationProvider().routeLogin(getLayerClient(), getLayerAppId(), from);
     }
 
@@ -90,7 +80,7 @@ public class App extends Application {
      * @param callback    Callback to receive authentication results.
      */
     @SuppressWarnings("unchecked")
-    public static void authenticate(Object credentials, AuthenticationProvider.Callback callback) {
+    public void authenticate(Object credentials, AuthenticationProvider.Callback callback) {
         LayerClient client = getLayerClient();
         if (client == null) return;
         String layerAppId = getLayerAppId();
@@ -101,7 +91,7 @@ public class App extends Application {
         client.requestAuthenticationNonce();
     }
 
-    public static void deauthenticate(AuthenticationListener deauthenticationListener) {
+    public void deauthenticate(AuthenticationListener deauthenticationListener) {
         LayerClient client = getLayerClient();
         if (client != null) {
             client.registerAuthenticationListener(deauthenticationListener);
@@ -119,12 +109,12 @@ public class App extends Application {
      *
      * @return New or existing LayerClient.
      */
-    public static LayerClient getLayerClient() {
-        if (sLayerClient == null) {
+    public LayerClient getLayerClient() {
+        if (mLayerClient == null) {
 
             String layerAppId = getLayerAppId();
             if (layerAppId == null) {
-                if (Log.isLoggable(Log.ERROR)) Log.e(sInstance.getString(R.string.app_id_required));
+                if (Log.isLoggable(Log.ERROR)) Log.e(getString(R.string.app_id_required));
                 return null;
             }
 
@@ -134,26 +124,19 @@ public class App extends Application {
                     .build();
             // Uncomment the following line to enable push notifications from FCM
             // options.useFirebaseCloudMessaging(true);
-            sLayerClient = LayerClient.newInstance(layerAppId, options);
+            mLayerClient = LayerClient.newInstance(layerAppId, options);
 
             /* Register AuthenticationProvider for handling authentication challenges */
-            sLayerClient.registerAuthenticationListener(getAuthenticationProvider());
+            mLayerClient.registerAuthenticationListener(getAuthenticationProvider());
         }
-        return sLayerClient;
+        return mLayerClient;
     }
 
-    public static String getLayerAppId() {
-        return CustomEnvironment.getLayerAppId();
+    public String getLayerAppId() {
+        return CustomEnvironment.getLayerAppId(this);
     }
 
-    public static AuthenticationProvider getAuthenticationProvider() {
-        if (sAuthProvider == null) {
-            sAuthProvider = new DefaultAuthenticationProvider(sInstance);
-
-//            // If we have cached credentials, try authenticating with Layer
-//            LayerClient layerClient = getLayerClient();
-//            if (layerClient != null && sAuthProvider.hasCredentials()) layerClient.requestAuthenticationNonce();
-        }
-        return sAuthProvider;
+    public AuthenticationProvider getAuthenticationProvider() {
+        return mAuthProvider;
     }
 }

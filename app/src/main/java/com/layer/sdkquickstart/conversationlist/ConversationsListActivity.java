@@ -20,7 +20,7 @@ public class ConversationsListActivity extends BaseActivity {
             getLayerClient().connect();
         }
 
-        if (App.routeLogin(this)) {
+        if (((App) getApplication()).routeLogin(this)) {
             if (!isFinishing()) finish();
         }
     }

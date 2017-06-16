@@ -26,8 +26,10 @@ public class DefaultAuthenticationProvider implements AuthenticationProvider<Def
 
     private final SharedPreferences mPreferences;
     private Callback mCallback;
+    private Context mAppContext;
 
     public DefaultAuthenticationProvider(Context context) {
+        mAppContext = context.getApplicationContext();
         mPreferences = context.getSharedPreferences(TAG, Context.MODE_PRIVATE);
     }
 
@@ -82,7 +84,7 @@ public class DefaultAuthenticationProvider implements AuthenticationProvider<Def
             return false;
         }
 
-        if (layerAppId == null && !CustomEnvironment.hasEnvironments()) {
+        if (layerAppId == null && !CustomEnvironment.hasEnvironments(mAppContext)) {
             // With no Layer App ID (and no CustomEnvironment) we can't requestAuthenticationNonce: bail out.
             if (Log.isLoggable(Log.ERROR)) Log.v("No Layer App ID set");
             Toast.makeText(from, R.string.app_id_required, Toast.LENGTH_LONG).show();
@@ -144,7 +146,7 @@ public class DefaultAuthenticationProvider implements AuthenticationProvider<Def
         try {
             // Post request
 
-            String url = CustomEnvironment.getProviderUrl() + "/users/sign_in.json";
+            String url = CustomEnvironment.getProviderUrl(mAppContext) + "/users/sign_in.json";
             HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection();
             connection.setDoInput(true);
             connection.setDoOutput(true);

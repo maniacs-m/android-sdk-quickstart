@@ -14,8 +14,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.layer.sdkquickstart.conversationlist.ConversationsListActivity;
-import com.layer.sdkquickstart.util.CustomEnvironment;
 import com.layer.sdkquickstart.util.AuthenticationProvider;
+import com.layer.sdkquickstart.util.CustomEnvironment;
 import com.layer.sdkquickstart.util.Log;
 
 public class LoginActivity extends AppCompatActivity {
@@ -58,7 +58,7 @@ public class LoginActivity extends AppCompatActivity {
             ((ViewGroup) mPassword.getParent()).addView(customEnvironments);
         }
 
-        App.getLayerClient().connect();
+        ((App) getApplication()).getLayerClient().connect();
     }
 
     @Override
@@ -74,7 +74,8 @@ public class LoginActivity extends AppCompatActivity {
         final ProgressDialog progressDialog = new ProgressDialog(LoginActivity.this);
         progressDialog.setMessage(getResources().getString(R.string.login_dialog_message));
         progressDialog.show();
-        App.authenticate(new DefaultAuthenticationProvider.Credentials(App.getLayerAppId(), email, password, null),
+        App app = ((App) getApplication());
+        app.authenticate(new DefaultAuthenticationProvider.Credentials(app.getLayerAppId(), email, password, null),
                 new AuthenticationProvider.Callback() {
                     @Override
                     public void onSuccess(AuthenticationProvider provider, String userId) {

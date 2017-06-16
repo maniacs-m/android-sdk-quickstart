@@ -6,8 +6,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
 
-import com.layer.sdkquickstart.App;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -34,23 +32,23 @@ public class CustomEnvironment {
     private static Environment sEnvironment;
     private static Map<String, Environment> sEnvironments;
 
-    public static String getLayerAppId() {
-        Environment environment = getEnvironment();
+    public static String getLayerAppId(Context context) {
+        Environment environment = getEnvironment(context);
         return environment == null ? null : environment.getAppId();
     }
 
-    public static String getProviderUrl() {
-        Environment environment = getEnvironment();
+    public static String getProviderUrl(Context context) {
+        Environment environment = getEnvironment(context);
         return environment == null ? null : environment.getProviderUrl();
     }
 
-    public static boolean hasEnvironments() {
-        Map<String, Environment> environments = getEnvironments();
+    public static boolean hasEnvironments(Context context) {
+        Map<String, Environment> environments = getEnvironments(context);
         return environments != null && !environments.isEmpty();
     }
 
     public static Spinner createSpinner(Context context) {
-        Set<String> environmentNames = getNames();
+        Set<String> environmentNames = getNames(context);
         // Don't create a spinner if there are no environments
         if (environmentNames == null || environmentNames.size() < 1) return null;
 
@@ -60,55 +58,54 @@ public class CustomEnvironment {
         Spinner spinner = new Spinner(context);
         spinner.setAdapter(adapter);
 
-        Environment environment = getEnvironment();
+        Environment environment = getEnvironment(context);
         if (environment != null) {
             int position = namesList.indexOf(environment.getName());
             if (position != -1) spinner.setSelection(position);
         }
-        setEnvironmentName((String) spinner.getSelectedItem());
+        setEnvironmentName(context, (String) spinner.getSelectedItem());
 
         spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                setEnvironmentName((String) parent.getSelectedItem());
+                setEnvironmentName(context, (String) parent.getSelectedItem());
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                setEnvironmentName(null);
+                setEnvironmentName(context, null);
             }
         });
 
         return spinner;
     }
 
-    private static Set<String> getNames() {
-        Map<String, Environment> environments = getEnvironments();
+    private static Set<String> getNames(Context context) {
+        Map<String, Environment> environments = getEnvironments(context);
         return environments == null ? null : environments.keySet();
     }
 
-    private static void setEnvironmentName(String name) {
-        App.getInstance().getSharedPreferences("layer_custom_environment", Context.MODE_PRIVATE).edit().putString("name", name).apply();
-        Map<String, Environment> environments = getEnvironments();
+    private static void setEnvironmentName(Context context, String name) {
+        context.getSharedPreferences("layer_custom_environment", Context.MODE_PRIVATE).edit().putString("name", name).apply();
+        Map<String, Environment> environments = getEnvironments(context);
         sEnvironment = (environments == null) ? null : environments.get(name);
         if (Log.isLoggable(Log.VERBOSE)) Log.v("Setting custom environment to: " + sEnvironment);
     }
 
-    private static Environment getEnvironment() {
+    private static Environment getEnvironment(Context context) {
         if (sEnvironment != null) return sEnvironment;
-        String savedEnvironmentName = App.getInstance().getSharedPreferences("layer_custom_environment", Context.MODE_PRIVATE).getString("name", null);
+        String savedEnvironmentName = context.getSharedPreferences("layer_custom_environment", Context.MODE_PRIVATE).getString("name", null);
         if (savedEnvironmentName == null) return null;
-        Map<String, Environment> environments = getEnvironments();
+        Map<String, Environment> environments = getEnvironments(context);
         sEnvironment = (environments == null) ? null : environments.get(savedEnvironmentName);
         return sEnvironment;
     }
 
-    private static Map<String, Environment> getEnvironments() {
+    private static Map<String, Environment> getEnvironments(Context context) {
         if (sEnvironments != null) return sEnvironments;
         sEnvironments = new HashMap<>();
 
         // Check for environments in resources
-        Context context = App.getInstance();
         int resId = context.getResources().getIdentifier("layer_environments", "raw", context.getPackageName());
         if (resId == 0) return null;
 

@@ -55,7 +55,7 @@ public abstract class BaseActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        LayerClient client = App.getLayerClient();
+        LayerClient client = getLayerClient();
         if (client == null) return;
         if (client.isAuthenticated()) {
             client.connect();
@@ -81,6 +81,6 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     protected LayerClient getLayerClient() {
-        return App.getLayerClient();
+        return ((App) getApplication()).getLayerClient();
     }
 }
