@@ -53,7 +53,6 @@ public class DefaultAuthenticationProvider implements AuthenticationProvider<Def
     @Override
     public void onAuthenticated(LayerClient layerClient, String userId) {
         if (Log.isLoggable(Log.VERBOSE)) Log.v("Authenticated with Layer, user ID: " + userId);
-        layerClient.connect();
         if (mCallback != null) mCallback.onSuccess(this, userId);
     }
 
