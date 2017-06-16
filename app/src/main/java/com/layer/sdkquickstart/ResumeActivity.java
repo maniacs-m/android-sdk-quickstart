@@ -19,20 +19,24 @@ public class ResumeActivity extends AppCompatActivity implements AuthenticationL
     private AtomicReference<Class<? extends Activity>> mLoggedInActivity = new AtomicReference<Class<? extends Activity>>(null);
     private AtomicReference<Class<? extends Activity>> mLoggedOutActivity = new AtomicReference<Class<? extends Activity>>(null);
 
+    private LayerClient mLayerClient;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_resume);
         final ActionBar actionBar = getSupportActionBar();
         if (actionBar != null) actionBar.hide();
+
+        mLayerClient = ((App) getApplication()).getLayerClient();
     }
 
     @SuppressWarnings("unchecked")
     @Override
     protected void onResume() {
         super.onResume();
-        // TODO this authenticate call should not be necessary anymore
-//        App.getLayerClient().registerAuthenticationListener(this).authenticate();
+        mLayerClient.registerAuthenticationListener(this);
+        mLayerClient.requestAuthenticationNonce();
         try {
             mLoggedInActivity.set((Class<? extends Activity>) Class.forName(getIntent().getStringExtra(EXTRA_LOGGED_IN_ACTIVITY_CLASS_NAME)));
             mLoggedOutActivity.set((Class<? extends Activity>) Class.forName(getIntent().getStringExtra(EXTRA_LOGGED_OUT_ACTIVITY_CLASS_NAME)));
@@ -45,7 +49,7 @@ public class ResumeActivity extends AppCompatActivity implements AuthenticationL
 
     @Override
     protected void onPause() {
-//        App.getLayerClient().unregisterAuthenticationListener(this);
+        mLayerClient.unregisterAuthenticationListener(this);
         super.onPause();
     }
 

@@ -16,10 +16,6 @@ public class ConversationsListActivity extends BaseActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (getLayerClient() != null) {
-            getLayerClient().connect();
-        }
-
         if (((App) getApplication()).routeLogin(this)) {
             if (!isFinishing()) finish();
         }

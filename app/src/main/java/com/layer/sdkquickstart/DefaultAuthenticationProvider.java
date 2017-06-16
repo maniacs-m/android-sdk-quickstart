@@ -92,7 +92,8 @@ public class DefaultAuthenticationProvider implements AuthenticationProvider<Def
         }
 
         if ((layerClient != null) && hasCredentials()) {
-            // With a LayerClient and cached provider credentials, we can resume.
+            // With a LayerClient and cached provider credentials, but user hasn't been
+            // authenticated. Attempt to authenticate using cached credentials.
             if (Log.isLoggable(Log.VERBOSE)) {
                 Log.v("Routing to resume Activity using cached credentials");
             }

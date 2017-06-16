@@ -128,6 +128,9 @@ public class App extends Application {
 
             /* Register AuthenticationProvider for handling authentication challenges */
             mLayerClient.registerAuthenticationListener(getAuthenticationProvider());
+
+            /* Connect the LayerClient to Layer servers */
+            mLayerClient.connect();
         }
         return mLayerClient;
     }

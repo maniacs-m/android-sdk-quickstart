@@ -53,18 +53,6 @@ public abstract class BaseActivity extends AppCompatActivity {
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        LayerClient client = getLayerClient();
-        if (client == null) return;
-        if (client.isAuthenticated()) {
-            client.connect();
-        } else {
-            client.requestAuthenticationNonce();
-        }
-    }
-
-    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(mMenuResId, menu);
         return true;
