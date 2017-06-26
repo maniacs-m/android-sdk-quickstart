@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 repositories {
-    maven { url "http://nexus.infra.layer.com/nexus/content/groups/public" }
+    mavenCentral()
 }
 
 android {
