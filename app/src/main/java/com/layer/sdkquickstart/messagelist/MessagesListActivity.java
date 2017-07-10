@@ -1,14 +1,35 @@
 package com.layer.sdkquickstart.messagelist;
 
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
+import com.layer.sdk.LayerClient;
+import com.layer.sdk.LayerQueryResult;
+import com.layer.sdk.listeners.LayerTypingIndicatorListener;
 import com.layer.sdk.messaging.Conversation;
+import com.layer.sdk.messaging.MessageOptions;
+import com.layer.sdk.messaging.PushNotificationPayload;
+import com.layer.sdk.query.Predicate;
+import com.layer.sdk.query.Query;
+import com.layer.sdk.query.Queryable;
+import com.layer.sdkquickstart.App;
 import com.layer.sdkquickstart.BaseActivity;
+import com.layer.sdkquickstart.ConversationSettingsActivity;
+import com.layer.sdkquickstart.PushNotificationReceiver;
 import com.layer.sdkquickstart.R;
+import com.layer.sdkquickstart.util.ConversationUtils;
+import com.layer.sdkquickstart.util.Log;
 
 public class MessagesListActivity extends BaseActivity {
     public static final String EXTRA_KEY_PARTICIPANT_IDS = "participantIds";
@@ -30,196 +51,224 @@ public class MessagesListActivity extends BaseActivity {
         super(R.layout.activity_messages_list, R.menu.menu_messages_list, R.string.title_select_conversation, true);
     }
 
-    // TODO requires message support
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (((App) getApplication()).routeLogin(this)) {
+            if (!isFinishing()) finish();
+            return;
+        }
 
+        initializeUi();
+        loadConversationFromIntent();
+    }
 
-//    @Override
-//    protected void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        if (App.routeLogin(this)) {
-//            if (!isFinishing()) finish();
-//            return;
-//        }
-//
-//        initializeUi();
-//        setConversationFromIntent();
-//        createAndSetRefreshListener();
-//        queryMessages();
-//    }
-//
-//    @Override
-//    protected void onResume() {
-//        // Clear any notifications for this conversation
+    @Override
+    protected void onResume() {
+        // Clear any notifications for this conversation
+        // TODO FCM support
 //        PushNotificationReceiver.getNotifications(this).clear(mConversation);
-//        super.onResume();
-//        setTitle(mConversation != null);
+        super.onResume();
+        setTitle(mConversation != null);
+        // TODO typing indicator support
 //        getLayerClient().registerTypingIndicator(mTypingIndicatorListener);
-//        mMessagesRefreshListener.registerLayerListener(getLayerClient());
-//    }
-//
-//    @Override
-//    protected void onPause() {
-//        // Update the notification position to the latest seen
+        if (mMessagesRefreshListener != null) {
+            mMessagesRefreshListener.registerLayerListener(getLayerClient());
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        // Update the notification position to the latest seen
+        // TODO FCM support
 //        PushNotificationReceiver.getNotifications(this).clear(mConversation);
-//        super.onPause();
+        super.onPause();
+        // TODO typing indicator support
 //        getLayerClient().unregisterTypingIndicator(mTypingIndicatorListener);
-//        mMessagesRefreshListener.unregisterLayerListener(getLayerClient());
-//    }
-//
-//    @Override
-//    public boolean onOptionsItemSelected(MenuItem item) {
-//        switch (item.getItemId()) {
-//            case R.id.action_details:
-//                if (mConversation == null) return true;
-//                Intent intent = new Intent(this, ConversationSettingsActivity.class);
+        if (mMessagesRefreshListener != null) {
+            mMessagesRefreshListener.unregisterLayerListener(getLayerClient());
+        }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.action_details:
+                if (mConversation == null) return true;
+                Intent intent = new Intent(this, ConversationSettingsActivity.class);
+                // TODO FCM support
 //                intent.putExtra(PushNotificationReceiver.LAYER_CONVERSATION_KEY, mConversation.getId());
-//                startActivity(intent);
-//                return true;
-//
-//            case R.id.action_sendlogs:
-//                LayerClient.sendLogs(getLayerClient(), this);
-//                return true;
-//        }
-//        return super.onOptionsItemSelected(item);
-//    }
-//
-//    private void initializeUi() {
-//        initializeMessagesAdapter();
-//        initializeMessagesList();
-//        initializeTypingIndicator();
-//        initializeMessageEntry();
-//        initializeSendButton();
-//    }
-//
-//    private void initializeMessagesAdapter() {
-//        mMessagesAdapter = new MessagesRecyclerAdapter(this, getLayerClient());
-//        mMessagesAdapter.setMessageAppendedListener(new ScrollOnMessageAppendedListener());
-//
-//        mMessagesRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
-//    }
-//
-//    private void initializeMessagesList() {
-//        mMessagesList = (RecyclerView) findViewById(R.id.messages_list);
-//        mMessagesListLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
-//        mMessagesListLayoutManager.setStackFromEnd(true);
-//        mMessagesList.setLayoutManager(mMessagesListLayoutManager);
-//        mMessagesList.setAdapter(mMessagesAdapter);
-//    }
-//
-//    private void initializeTypingIndicator() {
-//        TextView typingIndicatorView = (TextView) findViewById(R.id.typing_indicator);
+                startActivity(intent);
+                return true;
+
+            case R.id.action_sendlogs:
+                LayerClient.sendLogs(getLayerClient(), this);
+                return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    private void initializeUi() {
+        initializeMessagesAdapter();
+        initializeMessagesList();
+        initializeTypingIndicator();
+        initializeMessageEntry();
+        initializeSendButton();
+    }
+
+    private void initializeMessagesAdapter() {
+        mMessagesAdapter = new MessagesRecyclerAdapter(this, getLayerClient());
+        mMessagesAdapter.setMessageAppendedListener(new ScrollOnMessageAppendedListener());
+
+        mMessagesRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
+    }
+
+    private void initializeMessagesList() {
+        mMessagesList = (RecyclerView) findViewById(R.id.messages_list);
+        mMessagesListLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        mMessagesListLayoutManager.setStackFromEnd(true);
+        mMessagesList.setLayoutManager(mMessagesListLayoutManager);
+        mMessagesList.setAdapter(mMessagesAdapter);
+    }
+
+    private void initializeTypingIndicator() {
+        TextView typingIndicatorView = (TextView) findViewById(R.id.typing_indicator);
+        // TODO typing indicator support
 //        mTypingIndicatorListener = new TypingIndicatorListener(typingIndicatorView);
-//    }
-//
-//    private void initializeMessageEntry() {
-//        mMessageEntry = (EditText) findViewById(R.id.message_entry);
-//        mMessageEntry.addTextChangedListener(new MessageTextWatcher());
-//    }
-//
-//    private void initializeSendButton() {
-//        mSendButton = (Button) findViewById(R.id.send_button);
-//    }
-//
-//    private void setConversationFromIntent() {
-//        Conversation conversation = null;
-//        Intent intent = getIntent();
-//        if (intent.hasExtra(PushNotificationReceiver.LAYER_CONVERSATION_KEY)) {
-//            Uri conversationId = intent.getParcelableExtra(PushNotificationReceiver.LAYER_CONVERSATION_KEY);
-//            conversation = getLayerClient().getConversation(conversationId);
-//        } else if (intent.hasExtra(EXTRA_KEY_PARTICIPANT_IDS)) {
+    }
+
+    private void initializeMessageEntry() {
+        mMessageEntry = (EditText) findViewById(R.id.message_entry);
+        mMessageEntry.addTextChangedListener(new MessageTextWatcher());
+    }
+
+    private void initializeSendButton() {
+        mSendButton = (Button) findViewById(R.id.send_button);
+    }
+
+    private void loadConversationFromIntent() {
+        Conversation conversation = null;
+        Intent intent = getIntent();
+        // TODO FCM support
+        if (intent.hasExtra(PushNotificationReceiver.LAYER_CONVERSATION_KEY)) {
+            Uri conversationId = intent.getParcelableExtra(PushNotificationReceiver.LAYER_CONVERSATION_KEY);
+            // TODO fetch from layer client asynchronously
+            LayerQueryResult<? extends Queryable> result =
+                    getLayerClient().executeQueryForObjects(Query.builder(Conversation.class)
+                            .predicate(new Predicate(Conversation.Property.ID,
+                                    Predicate.Operator.EQUAL_TO, conversationId))
+                            .build());
+            result.setOnCompleteCallback(new Runnable() {
+                @Override
+                public void run() {
+                    // TODO we need to handle the case where the activity no longer exists
+                    // TODO handle query failures
+                    mConversation = (Conversation) result.getResults().get(0);
+                    setTitle(true);
+                    createAndSetRefreshListener();
+                    queryMessages();
+                }
+            });
+//            conversation = getLayerClient().get(conversationId);
+        } else if (intent.hasExtra(EXTRA_KEY_PARTICIPANT_IDS)) {
+        // TODO conversation creation support
 //            String[] participantIds = intent.getStringArrayExtra(EXTRA_KEY_PARTICIPANT_IDS);
 //            try {
 //                conversation = getLayerClient().newConversationWithUserIds(new ConversationOptions().distinct(true), participantIds);
 //            } catch (LayerConversationException e) {
 //                conversation = e.getConversation();
 //            }
-//        }
-//        mConversation = conversation;
-//    }
-//
-//    private void createAndSetRefreshListener() {
-//        mMessagesRefreshListener = new MessageRefreshListener(mConversation, mMessagesRefreshLayout);
-//        mMessagesRefreshLayout.setOnRefreshListener(mMessagesRefreshListener);
-//    }
-//
-//    public void setTitle(boolean useConversation) {
-//        if (!useConversation) {
-//            setTitle(R.string.title_select_conversation);
-//        } else {
-//            setTitle(ConversationUtils.getConversationTitle(getLayerClient(), mConversation));
-//        }
-//    }
-//
-//    private void queryMessages() {
-//        mMessagesAdapter.queryMessages(mConversation);
-//    }
-//
-//    public void onSendClicked(View v) {
-//        if (Log.isLoggable(Log.VERBOSE)) {
-//            Log.v("Sending text message");
-//        }
-//        String text = mMessageEntry.getText().toString();
-//
-//        // Send message
-//        String notificationString = createMessageNotificationString(text);
-//        PushNotificationPayload payload = new PushNotificationPayload.Builder()
-//                .text(notificationString)
-//                .build();
-//        MessageOptions messageOptions = new MessageOptions().defaultPushNotificationPayload(payload);
-//        sendMessage(text, messageOptions);
-//
-//        // Clear text
-//        mMessageEntry.setText(null);
-//    }
-//
-//    private String createMessageNotificationString(String text) {
+        }
+        mConversation = conversation;
+    }
+
+    private void createAndSetRefreshListener() {
+        mMessagesRefreshListener = new MessageRefreshListener(mConversation, mMessagesRefreshLayout);
+        mMessagesRefreshLayout.setOnRefreshListener(mMessagesRefreshListener);
+        mMessagesRefreshListener.registerLayerListener(getLayerClient());
+    }
+
+    public void setTitle(boolean useConversation) {
+        if (!useConversation) {
+            setTitle(R.string.title_select_conversation);
+        } else {
+            setTitle(ConversationUtils.getConversationTitle(getLayerClient(), mConversation));
+        }
+    }
+
+    private void queryMessages() {
+        mMessagesAdapter.queryMessages(mConversation);
+    }
+
+    public void onSendClicked(View v) {
+        if (Log.isLoggable(Log.VERBOSE)) {
+            Log.v("Sending text message");
+        }
+        String text = mMessageEntry.getText().toString();
+
+        // Send message
+        String notificationString = createMessageNotificationString(text);
+        PushNotificationPayload payload = new PushNotificationPayload.Builder()
+                .text(notificationString)
+                .build();
+        MessageOptions messageOptions = new MessageOptions().defaultPushNotificationPayload(payload);
+        sendMessage(text, messageOptions);
+
+        // Clear text
+        mMessageEntry.setText(null);
+    }
+
+    private String createMessageNotificationString(String text) {
+        // TODO authenticated user support
 //        Identity me = getLayerClient().getAuthenticatedUser();
 //        String myName = me == null ? "" : IdentityUtils.getDisplayName(me);
-//        String pushMessage = (text.length() < MAX_NOTIFICATION_LENGTH) ? text : (text.substring(0, MAX_NOTIFICATION_LENGTH) + "…");
-//        return String.format("%s: %s", myName, pushMessage);
-//    }
-//
-//    private void sendMessage(String text, MessageOptions messageOptions) {
+        String myName = "TODO";
+        String pushMessage = (text.length() < MAX_NOTIFICATION_LENGTH) ? text : (text.substring(0, MAX_NOTIFICATION_LENGTH) + "…");
+        return String.format("%s: %s", myName, pushMessage);
+    }
+
+    private void sendMessage(String text, MessageOptions messageOptions) {
+        // TODO message creation support
 //        MessagePart part = getLayerClient().newMessagePart(text);
 //        Message message = getLayerClient().newMessage(messageOptions, part);
 //        mConversation.send(message);
-//    }
-//
-//    private class MessageTextWatcher implements TextWatcher {
-//        @Override
-//        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-//        }
-//
-//        @Override
-//        public void onTextChanged(CharSequence s, int start, int before, int count) {
-//        }
-//
-//        @Override
-//        public void afterTextChanged(Editable s) {
-//            if (mConversation == null || mConversation.isDeleted()) return;
-//
-//            if (s.length() > 0 && !s.toString().trim().isEmpty()) {
-//                mSendButton.setEnabled(true);
-//                mConversation.send(LayerTypingIndicatorListener.TypingIndicator.STARTED);
-//            } else {
-//                mSendButton.setEnabled(false);
-//                mConversation.send(LayerTypingIndicatorListener.TypingIndicator.FINISHED);
-//            }
-//        }
-//    }
-//
-//    private class ScrollOnMessageAppendedListener implements MessagesRecyclerAdapter.OnMessageAppendedListener {
-//        @Override
-//        public void onMessageAppended() {
-//            scrollOnNewMessage();
-//        }
-//
-//        private void scrollOnNewMessage() {
-//            int end = mMessagesAdapter.getItemCount() - 1;
-//            if (end <= 0) return;
-//            int visible = mMessagesListLayoutManager.findLastVisibleItemPosition();
-//            // -3 because -1 seems too finicky
-//            if (visible >= (end - 3)) mMessagesList.scrollToPosition(end);
-//        }
-//    }
+    }
+
+    private class MessageTextWatcher implements TextWatcher {
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        }
+
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+        }
+
+        @Override
+        public void afterTextChanged(Editable s) {
+            if (mConversation == null || mConversation.isDeleted()) return;
+
+            if (s.length() > 0 && !s.toString().trim().isEmpty()) {
+                mSendButton.setEnabled(true);
+                mConversation.send(LayerTypingIndicatorListener.TypingIndicator.STARTED);
+            } else {
+                mSendButton.setEnabled(false);
+                mConversation.send(LayerTypingIndicatorListener.TypingIndicator.FINISHED);
+            }
+        }
+    }
+
+    private class ScrollOnMessageAppendedListener implements MessagesRecyclerAdapter.OnMessageAppendedListener {
+        @Override
+        public void onMessageAppended() {
+            scrollOnNewMessage();
+        }
+
+        private void scrollOnNewMessage() {
+            int end = mMessagesAdapter.getItemCount() - 1;
+            if (end <= 0) return;
+            int visible = mMessagesListLayoutManager.findLastVisibleItemPosition();
+            // -3 because -1 seems too finicky
+            if (visible >= (end - 3)) mMessagesList.scrollToPosition(end);
+        }
+    }
 }

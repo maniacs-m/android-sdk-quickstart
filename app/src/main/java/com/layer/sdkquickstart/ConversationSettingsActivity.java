@@ -34,7 +34,7 @@ public class ConversationSettingsActivity extends BaseActivity implements LayerP
 
         // Get Conversation from Intent extras
         Uri conversationId = getIntent().getParcelableExtra(PushNotificationReceiver.LAYER_CONVERSATION_KEY);
-        mConversation = getLayerClient().getConversation(conversationId);
+        mConversation = getLayerClient().getTransportConversation(conversationId);
         if (mConversation == null && !isFinishing()) finish();
 
         mParticipantAdapter = new ParticipantAdapter();
@@ -138,9 +138,9 @@ public class ConversationSettingsActivity extends BaseActivity implements LayerP
         public void refresh() {
             // Get new sorted list of Participants
             mParticipants.clear();
-            Set<Identity> conversationParticipants = mConversation.getParticipants();
-            conversationParticipants.remove(getLayerClient().getAuthenticatedUser());
-            mParticipants.addAll(conversationParticipants);
+            Set<Identity> participants = mConversation.getParticipants();
+            participants.remove(getLayerClient().getAuthenticatedUser());
+            mParticipants.addAll(participants);
             Collections.sort(mParticipants, new IdentityDisplayNameComparator());
 
             // Adjust participant container height

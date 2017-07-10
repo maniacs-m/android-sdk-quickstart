@@ -120,7 +120,7 @@ public class App extends Application {
 
             LayerClient.Options options = new LayerClient.Options.Builder()
                     .runAgainstStandalone(true)
-                    .customEndpoint(null, "https://35.184.171.16:5556/certificates", "https://35.184.171.16:9933/websocket")
+                    .customEndpoint(null, "https://35.188.9.244:5556/certificates", "https://35.188.9.244:9933/websocket")
                     .build();
             // Uncomment the following line to enable push notifications from FCM
             // options.useFirebaseCloudMessaging(true);

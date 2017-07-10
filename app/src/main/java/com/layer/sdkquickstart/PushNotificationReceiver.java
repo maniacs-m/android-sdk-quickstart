@@ -21,7 +21,7 @@ public class PushNotificationReceiver extends BroadcastReceiver {
 //    public final static String ACTION_PUSH = "com.layer.sdk.PUSH";
 //    public final static String ACTION_CANCEL = BuildConfig.APPLICATION_ID + ".CANCEL_PUSH";
 //
-//    public final static String LAYER_CONVERSATION_KEY = "layer-conversation-id";
+    public final static String LAYER_CONVERSATION_KEY = "layer-conversation-id";
 //    public final static String LAYER_MESSAGE_KEY = "layer-message-id";
 //
 //
