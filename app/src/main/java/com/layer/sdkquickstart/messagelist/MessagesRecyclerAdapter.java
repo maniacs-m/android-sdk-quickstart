@@ -9,7 +9,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.layer.sdk.LayerClient;
-import com.layer.sdk.LayerObjectRequest;
 import com.layer.sdk.messaging.Conversation;
 import com.layer.sdk.messaging.Identity;
 import com.layer.sdk.messaging.Message;
@@ -29,15 +28,14 @@ public class MessagesRecyclerAdapter extends RecyclerView.Adapter<MessageViewHol
     private RecyclerViewController<Message> mQueryController;
     private Context mContext;
     private OnMessageAppendedListener mMessageAppendedListener;
-    private LayerObjectRequest<Identity> mAuthenticatedUserRequest;
 
+    private Identity mAuthenticatedUser;
 
-    public MessagesRecyclerAdapter(Context context, LayerClient layerClient) {
+    public MessagesRecyclerAdapter(Context context, LayerClient layerClient, Identity authenticatedUser) {
         mContext = context;
-        // TODO authenticated user
-        mAuthenticatedUserRequest = layerClient.getAuthenticatedUser();
-//        mAuthenticatedUser = layerClient.getAuthenticatedUser();
-        mQueryController = layerClient.newRecyclerViewController(null, null, new NotifyChangesCallback());
+        mAuthenticatedUser = authenticatedUser;
+        mQueryController = layerClient.newRecyclerViewController(null, null,
+                new NotifyChangesCallback());
     }
 
     @Override
@@ -52,7 +50,7 @@ public class MessagesRecyclerAdapter extends RecyclerView.Adapter<MessageViewHol
         Message message = mQueryController.getItem(position);
 
         Identity sender = message.getSender();
-        boolean isSelf = mAuthenticatedUserRequest.getAndBlock().equals(sender);
+        boolean isSelf = mAuthenticatedUser.equals(sender);
         holder.setIsUsersMessage(isSelf);
 
         if (isSelf) {
@@ -125,7 +123,7 @@ public class MessagesRecyclerAdapter extends RecyclerView.Adapter<MessageViewHol
         boolean delivered = false;
         Map<Identity, Message.RecipientStatus> recipientStatuses = message.getRecipientStatus();
         for (Map.Entry<Identity, Message.RecipientStatus> entry : recipientStatuses.entrySet()) {
-            if (entry.getKey().equals(mAuthenticatedUserRequest.getAndBlock())) {
+            if (entry.getKey().equals(mAuthenticatedUser)) {
                 continue;
             }
             if (entry.getValue() == Message.RecipientStatus.READ) {

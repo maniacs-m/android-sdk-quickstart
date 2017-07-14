@@ -14,15 +14,19 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.layer.sdk.LayerDataRequest;
 import com.layer.sdk.LayerClient;
-import com.layer.sdk.LayerQueryResult;
+import com.layer.sdk.LayerDataObserver;
+import com.layer.sdk.LayerObjectRequest;
+import com.layer.sdk.LayerQueryRequest;
 import com.layer.sdk.listeners.LayerTypingIndicatorListener;
 import com.layer.sdk.messaging.Conversation;
+import com.layer.sdk.messaging.Identity;
+import com.layer.sdk.messaging.LayerObject;
 import com.layer.sdk.messaging.MessageOptions;
 import com.layer.sdk.messaging.PushNotificationPayload;
 import com.layer.sdk.query.Predicate;
 import com.layer.sdk.query.Query;
-import com.layer.sdk.query.Queryable;
 import com.layer.sdkquickstart.App;
 import com.layer.sdkquickstart.BaseActivity;
 import com.layer.sdkquickstart.ConversationSettingsActivity;
@@ -47,6 +51,11 @@ public class MessagesListActivity extends BaseActivity {
     private MessageRefreshListener mMessagesRefreshListener;
     private Conversation mConversation;
 
+    private LayerObjectRequest<Identity> mAuthenticatedUserRequest;
+    private LayerQueryRequest<Conversation> mConversationRequest;
+    private Identity mAuthenticatedUser;
+    private LayerDataObserver.Abstract mDataObserver;
+
     public MessagesListActivity() {
         super(R.layout.activity_messages_list, R.menu.menu_messages_list, R.string.title_select_conversation, true);
     }
@@ -59,8 +68,26 @@ public class MessagesListActivity extends BaseActivity {
             return;
         }
 
-        initializeUi();
+        mDataObserver = new LayerDataObserver.Abstract() {
+            @Override
+            public void onDataRequestCompleted(LayerDataRequest request, LayerObject object) {
+                if (request == mAuthenticatedUserRequest) {
+                    // TODO handle failure?
+                    mAuthenticatedUser = mAuthenticatedUserRequest.getObject();
+                    initializeUi();
+                    attemptInit();
+                } else if (request == mConversationRequest) {
+                    // TODO handle failures
+                    mConversation = mConversationRequest.getResults().get(0);
+                    setTitle(true);
+                    attemptInit();
+                }
+            }
+        };
+
         loadConversationFromIntent();
+        getLayerClient().registerDataObserver(mDataObserver);
+        mAuthenticatedUserRequest = getLayerClient().getAuthenticatedUser();
     }
 
     @Override
@@ -88,6 +115,8 @@ public class MessagesListActivity extends BaseActivity {
         if (mMessagesRefreshListener != null) {
             mMessagesRefreshListener.unregisterLayerListener(getLayerClient());
         }
+
+        getLayerClient().unregisterDataObserver(mDataObserver);
     }
 
     @Override
@@ -108,6 +137,13 @@ public class MessagesListActivity extends BaseActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    private void attemptInit() {
+        if (mConversation != null && mAuthenticatedUser != null) {
+            createAndSetRefreshListener();
+            queryMessages();
+        }
+    }
+
     private void initializeUi() {
         initializeMessagesAdapter();
         initializeMessagesList();
@@ -117,7 +153,7 @@ public class MessagesListActivity extends BaseActivity {
     }
 
     private void initializeMessagesAdapter() {
-        mMessagesAdapter = new MessagesRecyclerAdapter(this, getLayerClient());
+        mMessagesAdapter = new MessagesRecyclerAdapter(this, getLayerClient(), mAuthenticatedUser);
         mMessagesAdapter.setMessageAppendedListener(new ScrollOnMessageAppendedListener());
 
         mMessagesRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.swipe_refresh_layout);
@@ -152,23 +188,12 @@ public class MessagesListActivity extends BaseActivity {
         // TODO FCM support
         if (intent.hasExtra(PushNotificationReceiver.LAYER_CONVERSATION_KEY)) {
             Uri conversationId = intent.getParcelableExtra(PushNotificationReceiver.LAYER_CONVERSATION_KEY);
-            // TODO fetch from layer client asynchronously
-            LayerQueryResult<? extends Queryable> result =
-                    getLayerClient().executeQueryForObjects(Query.builder(Conversation.class)
+
+            //noinspection unchecked
+            mConversationRequest = (LayerQueryRequest<Conversation>) getLayerClient().executeQueryForObjects(Query.builder(Conversation.class)
                             .predicate(new Predicate(Conversation.Property.ID,
                                     Predicate.Operator.EQUAL_TO, conversationId))
                             .build());
-            result.setOnCompleteCallback(new Runnable() {
-                @Override
-                public void run() {
-                    // TODO we need to handle the case where the activity no longer exists
-                    // TODO handle query failures
-                    mConversation = (Conversation) result.getResults().get(0);
-                    setTitle(true);
-                    createAndSetRefreshListener();
-                    queryMessages();
-                }
-            });
 //            conversation = getLayerClient().get(conversationId);
         } else if (intent.hasExtra(EXTRA_KEY_PARTICIPANT_IDS)) {
         // TODO conversation creation support
