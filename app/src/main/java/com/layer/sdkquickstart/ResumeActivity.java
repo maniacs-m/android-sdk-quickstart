@@ -6,9 +6,9 @@ import android.os.Bundle;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 
+import com.layer.sdk.LayerClient;
 import com.layer.sdk.authentication.AuthenticationListener;
 import com.layer.sdkquickstart.util.Log;
-import com.layer.sdk.LayerClient;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -59,7 +59,7 @@ public class ResumeActivity extends AppCompatActivity implements AuthenticationL
     }
 
     @Override
-    public void onDeauthenticated(LayerClient layerClient) {
+    public void onDeauthenticated(LayerClient layerClient, String userId) {
         startActivity(mLoggedOutActivity.get());
     }
 

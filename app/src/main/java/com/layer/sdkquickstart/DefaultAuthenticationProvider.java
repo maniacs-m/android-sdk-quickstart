@@ -1,7 +1,5 @@
 package com.layer.sdkquickstart;
 
-import static com.layer.sdkquickstart.util.Util.streamToString;
-
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -20,6 +18,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+
+import static com.layer.sdkquickstart.util.Util.streamToString;
 
 public class DefaultAuthenticationProvider implements AuthenticationProvider<DefaultAuthenticationProvider.Credentials> {
     private static final String TAG = DefaultAuthenticationProvider.class.getSimpleName();
@@ -57,7 +57,7 @@ public class DefaultAuthenticationProvider implements AuthenticationProvider<Def
     }
 
     @Override
-    public void onDeauthenticated(LayerClient layerClient) {
+    public void onDeauthenticated(LayerClient layerClient, String userId) {
         if (Log.isLoggable(Log.VERBOSE)) Log.v("Deauthenticated with Layer");
     }
 
