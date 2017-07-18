@@ -55,14 +55,12 @@ public class MessagesRecyclerAdapter extends RecyclerView.Adapter<MessageViewHol
 
         if (isSelf) {
             holder.setParticipantName(null);
-            // TODO receipt support
-//            holder.setStatusText(getDateWithStatusText(message));
+            holder.setStatusText(getDateWithStatusText(message));
         } else {
             // TODO receipt support
 //            message.markAsRead();
             holder.setParticipantName(IdentityUtils.getDisplayName(sender));
-            // TODO receipt support
-//            holder.setStatusText(getDateText(message));
+            holder.setStatusText(getDateText(message));
         }
 
         holder.setMessage(MessageUtils.getMessageText(message));
