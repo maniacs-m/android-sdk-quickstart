@@ -8,6 +8,8 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.layer.sdk.LayerClient;
+import com.layer.sdk.LayerDataRequest;
+import com.layer.sdk.LayerObjectRequest;
 import com.layer.sdk.messaging.Conversation;
 import com.layer.sdk.messaging.Identity;
 import com.layer.sdk.messaging.Message;
@@ -28,11 +30,10 @@ import java.util.Set;
 public class ConversationRecyclerAdapter extends RecyclerView.Adapter<ConversationViewHolder> {
 
     private RecyclerViewController<Conversation> mQueryController;
-    private Identity mAuthenticatedUser;
+    private LayerClient mLayerClient;
 
     public ConversationRecyclerAdapter(LayerClient layerClient) {
-        // TODO get authenticated user for title
-//        mAuthenticatedUser = layerClient.getAuthenticatedUser();
+        mLayerClient = layerClient;
         setHasStableIds(false);
 
         buildAndExecuteQuery(layerClient);
@@ -48,14 +49,27 @@ public class ConversationRecyclerAdapter extends RecyclerView.Adapter<Conversati
     public void onBindViewHolder(ConversationViewHolder holder, int position) {
         mQueryController.updateBoundPosition(position);
         final Conversation conversation = mQueryController.getItem(position);
-        holder.setOnClickListener(new ItemClickListener(conversation));
+        if (conversation == null) {
+            holder.setOnClickListener(null);
+            holder.setMessage(null);
+            holder.setName(null);
+            holder.setLastMessageTime(null);
+        } else {
+            holder.setOnClickListener(new ItemClickListener(conversation));
 
-        Set<Identity> participants = conversation.getParticipants();
-        setTitle(holder, participants);
+            LayerObjectRequest<Identity> authenticatedUserRequest =
+                    mLayerClient.getAuthenticatedUser();
+            if (authenticatedUserRequest.getRequestStatus()
+                    == LayerDataRequest.RequestStatus.PENDING) {
+                mQueryController.registerRequestForPosition(authenticatedUserRequest, position);
+            }
+            Set<Identity> participants = conversation.getParticipants();
+            setTitle(holder, participants, authenticatedUserRequest.getObject());
 
-        Message lastMessage = conversation.getLastMessage();
-        setMessage(holder, lastMessage);
-        setMessageDate(holder, lastMessage);
+            Message lastMessage = conversation.getLastMessage();
+            setMessage(holder, lastMessage);
+            setMessageDate(holder, lastMessage);
+        }
     }
 
     @Override
@@ -76,12 +90,12 @@ public class ConversationRecyclerAdapter extends RecyclerView.Adapter<Conversati
         mQueryController.execute();
     }
 
-    private void setTitle(ConversationViewHolder holder, Set<Identity> participants) {
+    private void setTitle(ConversationViewHolder holder, Set<Identity> participants, Identity authenticatedUser) {
         StringBuilder sb = new StringBuilder();
         for (Identity participant : participants) {
-//            if (mAuthenticatedUser.equals(participant)) {
-//                continue;
-//            }
+            if (participant.equals(authenticatedUser)) {
+                continue;
+            }
             if (sb.length() > 0) {
                 sb.append(", ");
             }
