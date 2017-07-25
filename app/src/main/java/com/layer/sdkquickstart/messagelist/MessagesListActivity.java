@@ -14,16 +14,18 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.layer.sdk.LayerDataRequest;
 import com.layer.sdk.LayerClient;
 import com.layer.sdk.LayerDataObserver;
+import com.layer.sdk.LayerDataRequest;
 import com.layer.sdk.LayerObjectRequest;
 import com.layer.sdk.LayerQueryRequest;
 import com.layer.sdk.listeners.LayerTypingIndicatorListener;
 import com.layer.sdk.messaging.Conversation;
 import com.layer.sdk.messaging.Identity;
 import com.layer.sdk.messaging.LayerObject;
+import com.layer.sdk.messaging.Message;
 import com.layer.sdk.messaging.MessageOptions;
+import com.layer.sdk.messaging.MessagePart;
 import com.layer.sdk.messaging.PushNotificationPayload;
 import com.layer.sdk.query.Predicate;
 import com.layer.sdk.query.Query;
@@ -254,9 +256,9 @@ public class MessagesListActivity extends BaseActivity {
 
     private void sendMessage(String text, MessageOptions messageOptions) {
         // TODO message creation support
-//        MessagePart part = getLayerClient().newMessagePart(text);
-//        Message message = getLayerClient().newMessage(messageOptions, part);
-//        mConversation.send(message);
+        MessagePart part = getLayerClient().newMessagePart(text);
+        Message message = getLayerClient().newMessage(messageOptions, part);
+        mConversation.send(message);
     }
 
     private class MessageTextWatcher implements TextWatcher {
