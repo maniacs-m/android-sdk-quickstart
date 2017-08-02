@@ -255,7 +255,6 @@ public class MessagesListActivity extends BaseActivity {
     }
 
     private void sendMessage(String text, MessageOptions messageOptions) {
-        // TODO message creation support
         MessagePart part = getLayerClient().newMessagePart(text);
         Message message = getLayerClient().newMessage(messageOptions, part);
         mConversation.send(message);
