@@ -8,8 +8,12 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.layer.sdk.LayerClient;
+import com.layer.sdk.LayerDataObserver;
+import com.layer.sdk.LayerDataRequest;
+import com.layer.sdk.LayerObjectRequest;
 import com.layer.sdk.messaging.Conversation;
 import com.layer.sdk.messaging.Identity;
+import com.layer.sdk.messaging.LayerObject;
 import com.layer.sdk.messaging.Message;
 import com.layer.sdk.query.Predicate;
 import com.layer.sdk.query.Query;
@@ -28,14 +32,31 @@ import java.util.Set;
 public class ConversationRecyclerAdapter extends RecyclerView.Adapter<ConversationViewHolder> {
 
     private RecyclerViewController<Conversation> mQueryController;
+    private LayerObjectRequest<Identity> mAuthenticatedUserRequest;
     private Identity mAuthenticatedUser;
 
     public ConversationRecyclerAdapter(LayerClient layerClient) {
-        // TODO get authenticated user for title
-//        mAuthenticatedUser = layerClient.getAuthenticatedUser();
         setHasStableIds(false);
 
-        buildAndExecuteQuery(layerClient);
+        /* TODO clean this up (PE)
+            This pattern requires too much work UI side in my opinion. We need to find some way
+            to clean this up. (PE)
+         */
+        mAuthenticatedUserRequest = layerClient.getAuthenticatedUser();
+        if (mAuthenticatedUserRequest.getRequestStatus() == LayerDataRequest.RequestStatus.AVAILABLE) {
+            mAuthenticatedUser = mAuthenticatedUserRequest.getObject();
+            buildAndExecuteQuery(layerClient);
+        } else {
+            layerClient.registerDataObserver(new LayerDataObserver.Abstract() {
+                @Override
+                public void onDataRequestCompleted(LayerDataRequest request, LayerObject object) {
+                    if (request.equals(mAuthenticatedUserRequest)) {
+                        mAuthenticatedUser = mAuthenticatedUserRequest.getObject();
+                        buildAndExecuteQuery(layerClient);
+                    }
+                }
+            });
+        }
     }
 
     @Override
@@ -60,6 +81,9 @@ public class ConversationRecyclerAdapter extends RecyclerView.Adapter<Conversati
 
     @Override
     public int getItemCount() {
+        if (mQueryController == null) {
+            return 0;
+        }
         return mQueryController.getItemCount();
     }
 
@@ -79,9 +103,9 @@ public class ConversationRecyclerAdapter extends RecyclerView.Adapter<Conversati
     private void setTitle(ConversationViewHolder holder, Set<Identity> participants) {
         StringBuilder sb = new StringBuilder();
         for (Identity participant : participants) {
-//            if (mAuthenticatedUser.equals(participant)) {
-//                continue;
-//            }
+            if (mAuthenticatedUser.equals(participant)) {
+                continue;
+            }
             if (sb.length() > 0) {
                 sb.append(", ");
             }

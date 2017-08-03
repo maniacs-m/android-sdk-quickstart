@@ -10,6 +10,8 @@ package com.layer.sdkquickstart;
 //
 //}
 
+import static com.layer.sdkquickstart.util.Log.ERROR;
+
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ClipData;
@@ -31,8 +33,6 @@ import com.layer.sdk.changes.LayerChangeEvent;
 import com.layer.sdk.internal.LayerClientImpl;
 import com.layer.sdk.listeners.LayerChangeEventListener;
 import com.layer.sdkquickstart.util.Log;
-
-import static com.layer.sdkquickstart.util.Log.ERROR;
 
 // public class AppSettingsActivity extends BaseActivity implements LayerConnectionListener, LayerAuthenticationListener, LayerChangeEventListener, View.OnLongClickListener {
 public class AppSettingsActivity extends BaseActivity implements AuthenticationListener, LayerChangeEventListener, View.OnLongClickListener {
@@ -189,8 +189,11 @@ public class AppSettingsActivity extends BaseActivity implements AuthenticationL
     private void refresh() {
         if (!getLayerClient().isAuthenticated()) return;
 
-//        /* Account */
-//        Identity currentUser = getLayerClient().getAuthenticatedUser();
+        /* Account */
+        // TODO this is dependent on identity sync so we can get the display name for the current user
+//        // TODO fix this async pattern. This should work for now since it should always be cached at this point.
+//        LayerObjectRequest<Identity> authenticatedUserRequest = getLayerClient().getAuthenticatedUser();
+//        Identity currentUser = authenticatedUserRequest.getObject();
 //        if (currentUser != null) {
 //            mUserName.setText(IdentityUtils.getDisplayName(currentUser));
 //        } else {

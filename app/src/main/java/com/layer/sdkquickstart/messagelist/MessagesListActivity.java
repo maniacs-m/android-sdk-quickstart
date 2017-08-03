@@ -81,7 +81,6 @@ public class MessagesListActivity extends BaseActivity {
                 } else if (request == mConversationRequest) {
                     // TODO handle failures
                     mConversation = mConversationRequest.getResults().get(0);
-                    setTitle(true);
                     attemptInit();
                 }
             }
@@ -98,7 +97,8 @@ public class MessagesListActivity extends BaseActivity {
         // TODO FCM support
 //        PushNotificationReceiver.getNotifications(this).clear(mConversation);
         super.onResume();
-        setTitle(mConversation != null);
+        // TODO new conversation support
+//        setTitle(mConversation != null);
         // TODO typing indicator support
 //        getLayerClient().registerTypingIndicator(mTypingIndicatorListener);
         if (mMessagesRefreshListener != null) {
@@ -141,6 +141,7 @@ public class MessagesListActivity extends BaseActivity {
 
     private void attemptInit() {
         if (mConversation != null && mAuthenticatedUser != null) {
+            setTitle(true);
             createAndSetRefreshListener();
             queryMessages();
         }
@@ -219,7 +220,7 @@ public class MessagesListActivity extends BaseActivity {
         if (!useConversation) {
             setTitle(R.string.title_select_conversation);
         } else {
-            setTitle(ConversationUtils.getConversationTitle(getLayerClient(), mConversation));
+            setTitle(ConversationUtils.getConversationTitle(mAuthenticatedUser, mConversation));
         }
     }
 
