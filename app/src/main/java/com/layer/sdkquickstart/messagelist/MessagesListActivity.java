@@ -21,6 +21,8 @@ import com.layer.sdk.LayerObjectRequest;
 import com.layer.sdk.LayerQueryRequest;
 import com.layer.sdk.listeners.LayerTypingIndicatorListener;
 import com.layer.sdk.messaging.Conversation;
+import com.layer.sdk.messaging.ConversationOptions;
+import com.layer.sdk.messaging.ConversationType;
 import com.layer.sdk.messaging.Identity;
 import com.layer.sdk.messaging.LayerObject;
 import com.layer.sdk.messaging.Message;
@@ -36,6 +38,9 @@ import com.layer.sdkquickstart.PushNotificationReceiver;
 import com.layer.sdkquickstart.R;
 import com.layer.sdkquickstart.util.ConversationUtils;
 import com.layer.sdkquickstart.util.Log;
+
+import java.util.ArrayList;
+import java.util.HashSet;
 
 public class MessagesListActivity extends BaseActivity {
     public static final String EXTRA_KEY_PARTICIPANT_IDS = "participantIds";
@@ -55,6 +60,7 @@ public class MessagesListActivity extends BaseActivity {
 
     private LayerObjectRequest<Identity> mAuthenticatedUserRequest;
     private LayerQueryRequest<Conversation> mConversationRequest;
+    private LayerQueryRequest<Identity> mIdentitiesRequest;
     private Identity mAuthenticatedUser;
     private LayerDataObserver.Abstract mDataObserver;
 
@@ -82,6 +88,11 @@ public class MessagesListActivity extends BaseActivity {
                     // TODO handle failures
                     mConversation = mConversationRequest.getResults().get(0);
                     attemptInit();
+                } else if (request == mIdentitiesRequest) {
+                    ConversationOptions options = new ConversationOptions().type(ConversationType.DIRECT_MESSAGE_CONVERSATION);
+                    HashSet<Identity> identities = new HashSet<>(mIdentitiesRequest.getResults());
+                    mConversation = getLayerClient().newConversation(options, identities);
+                    attemptInit();
                 }
             }
         };
@@ -97,8 +108,6 @@ public class MessagesListActivity extends BaseActivity {
         // TODO FCM support
 //        PushNotificationReceiver.getNotifications(this).clear(mConversation);
         super.onResume();
-        // TODO new conversation support
-//        setTitle(mConversation != null);
         // TODO typing indicator support
 //        getLayerClient().registerTypingIndicator(mTypingIndicatorListener);
         if (mMessagesRefreshListener != null) {
@@ -117,7 +126,11 @@ public class MessagesListActivity extends BaseActivity {
         if (mMessagesRefreshListener != null) {
             mMessagesRefreshListener.unregisterLayerListener(getLayerClient());
         }
+    }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
         getLayerClient().unregisterDataObserver(mDataObserver);
     }
 
@@ -186,7 +199,6 @@ public class MessagesListActivity extends BaseActivity {
     }
 
     private void loadConversationFromIntent() {
-        Conversation conversation = null;
         Intent intent = getIntent();
         // TODO FCM support
         if (intent.hasExtra(PushNotificationReceiver.LAYER_CONVERSATION_KEY)) {
@@ -197,17 +209,16 @@ public class MessagesListActivity extends BaseActivity {
                             .predicate(new Predicate(Conversation.Property.ID,
                                     Predicate.Operator.EQUAL_TO, conversationId))
                             .build());
-//            conversation = getLayerClient().get(conversationId);
         } else if (intent.hasExtra(EXTRA_KEY_PARTICIPANT_IDS)) {
-        // TODO conversation creation support
-//            String[] participantIds = intent.getStringArrayExtra(EXTRA_KEY_PARTICIPANT_IDS);
-//            try {
-//                conversation = getLayerClient().newConversationWithUserIds(new ConversationOptions().distinct(true), participantIds);
-//            } catch (LayerConversationException e) {
-//                conversation = e.getConversation();
-//            }
+            ArrayList<String> participantUris = intent.getStringArrayListExtra(
+                    EXTRA_KEY_PARTICIPANT_IDS);
+
+            //noinspection unchecked
+            mIdentitiesRequest = (LayerQueryRequest<Identity>) getLayerClient().executeQueryForObjects(Query.builder(Identity.class)
+                    .predicate(new Predicate(Identity.Property.ID,
+                            Predicate.Operator.IN, participantUris))
+                    .build());
         }
-        mConversation = conversation;
     }
 
     private void createAndSetRefreshListener() {

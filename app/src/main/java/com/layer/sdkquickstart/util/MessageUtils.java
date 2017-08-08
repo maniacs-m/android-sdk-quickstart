@@ -1,5 +1,7 @@
 package com.layer.sdkquickstart.util;
 
+import android.support.annotation.Nullable;
+
 import com.layer.sdk.messaging.Message;
 import com.layer.sdk.messaging.MessagePart;
 
@@ -9,16 +11,18 @@ public class MessageUtils {
 
     // TODO requires message support
 
-    public static String getMessageText(Message message) {
+    public static String getMessageText(@Nullable Message message) {
         String messageText = null;
-        List<MessagePart> messageParts = message.getMessageParts();
-        if (messageParts != null && !messageParts.isEmpty()) {
-            MessagePart messagePart = messageParts.get(0);
-            String mimeType = messagePart.getMimeType();
-            if (mimeType.equals("text/plain")) {
-                messageText = new String(messagePart.getData());
-            } else {
-                messageText = getMimeTypesAndSizes(messageParts);
+        if (message != null) {
+            List<MessagePart> messageParts = message.getMessageParts();
+            if (messageParts != null && !messageParts.isEmpty()) {
+                MessagePart messagePart = messageParts.get(0);
+                String mimeType = messagePart.getMimeType();
+                if (mimeType.equals("text/plain")) {
+                    messageText = new String(messagePart.getData());
+                } else {
+                    messageText = getMimeTypesAndSizes(messageParts);
+                }
             }
         }
 

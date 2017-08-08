@@ -1,9 +1,14 @@
 package com.layer.sdkquickstart;
 
+import static com.layer.sdkquickstart.util.Util.streamToString;
+
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.support.annotation.WorkerThread;
 import android.widget.Toast;
 
 import com.layer.sdk.LayerClient;
@@ -19,18 +24,21 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-import static com.layer.sdkquickstart.util.Util.streamToString;
-
 public class DefaultAuthenticationProvider implements AuthenticationProvider<DefaultAuthenticationProvider.Credentials> {
     private static final String TAG = DefaultAuthenticationProvider.class.getSimpleName();
 
     private final SharedPreferences mPreferences;
     private Callback mCallback;
     private Context mAppContext;
+    private Handler mWorkerHandler;
 
     public DefaultAuthenticationProvider(Context context) {
         mAppContext = context.getApplicationContext();
         mPreferences = context.getSharedPreferences(TAG, Context.MODE_PRIVATE);
+        HandlerThread handlerThread = new HandlerThread("AuthenticationProvider");
+        // This lives for the life of the application so don't worry about stopping
+        handlerThread.start();
+        mWorkerHandler = new Handler(handlerThread.getLooper());
     }
 
     @Override
@@ -65,7 +73,7 @@ public class DefaultAuthenticationProvider implements AuthenticationProvider<Def
     @Override
     public void onAuthenticationChallenge(LayerClient layerClient, String nonce) {
         if (Log.isLoggable(Log.VERBOSE)) Log.v("Received challenge: " + nonce);
-        respondToChallenge(layerClient, nonce);
+        mWorkerHandler.post(() -> respondToChallenge(layerClient, nonce));
     }
 
     @Override
@@ -134,6 +142,7 @@ public class DefaultAuthenticationProvider implements AuthenticationProvider<Def
                 mPreferences.getString("authToken", null));
     }
 
+    @WorkerThread
     private void respondToChallenge(LayerClient layerClient, String nonce) {
         Credentials credentials = getCredentials();
         if (credentials == null || credentials.getEmail() == null || (credentials.getPassword() == null && credentials.getAuthToken() == null) || credentials.getLayerAppId() == null) {

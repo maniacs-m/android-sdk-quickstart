@@ -120,12 +120,17 @@ public class ConversationRecyclerAdapter extends RecyclerView.Adapter<Conversati
     }
 
     private void setMessageDate(ConversationViewHolder holder, Message lastMessage) {
-        Date sentDate = lastMessage.getSentAt();
-        if (sentDate != null) {
-            CharSequence formattedTime = DateUtils.formatSameDayTime(sentDate.getTime(), System.currentTimeMillis(), DateFormat.DEFAULT, DateFormat.SHORT);
-            holder.setLastMessageTime(formattedTime);
-        } else {
+        if (lastMessage == null) {
             holder.setLastMessageTime(null);
+        } else {
+            Date sentDate = lastMessage.getSentAt();
+            if (sentDate != null) {
+                CharSequence formattedTime = DateUtils.formatSameDayTime(sentDate.getTime(),
+                        System.currentTimeMillis(), DateFormat.DEFAULT, DateFormat.SHORT);
+                holder.setLastMessageTime(formattedTime);
+            } else {
+                holder.setLastMessageTime(null);
+            }
         }
     }
 
