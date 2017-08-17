@@ -35,8 +35,11 @@ public class ResumeActivity extends AppCompatActivity implements AuthenticationL
     @Override
     protected void onResume() {
         super.onResume();
+        // TODO This auth request is probably not this simple
+        if (!mLayerClient.isAuthenticated()) {
+            mLayerClient.requestAuthenticationNonce();
+        }
         mLayerClient.registerAuthenticationListener(this);
-        mLayerClient.requestAuthenticationNonce();
         try {
             mLoggedInActivity.set((Class<? extends Activity>) Class.forName(getIntent().getStringExtra(EXTRA_LOGGED_IN_ACTIVITY_CLASS_NAME)));
             mLoggedOutActivity.set((Class<? extends Activity>) Class.forName(getIntent().getStringExtra(EXTRA_LOGGED_OUT_ACTIVITY_CLASS_NAME)));
