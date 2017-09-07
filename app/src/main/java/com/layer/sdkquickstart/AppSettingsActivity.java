@@ -28,14 +28,17 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.layer.sdk.LayerClient;
+import com.layer.sdk.LayerDataObserver;
+import com.layer.sdk.LayerDataRequest;
 import com.layer.sdk.authentication.AuthenticationListener;
 import com.layer.sdk.changes.LayerChangeEvent;
 import com.layer.sdk.internal.LayerClientImpl;
-import com.layer.sdk.listeners.LayerChangeEventListener;
+import com.layer.sdk.messaging.LayerObject;
 import com.layer.sdkquickstart.util.Log;
 
 // public class AppSettingsActivity extends BaseActivity implements LayerConnectionListener, LayerAuthenticationListener, LayerChangeEventListener, View.OnLongClickListener {
-public class AppSettingsActivity extends BaseActivity implements AuthenticationListener, LayerChangeEventListener, View.OnLongClickListener {
+public class AppSettingsActivity extends BaseActivity implements AuthenticationListener,
+        LayerDataObserver, View.OnLongClickListener {
 
     private static final String TAG = LayerClientImpl.class.getSimpleName();
 
@@ -161,8 +164,8 @@ public class AppSettingsActivity extends BaseActivity implements AuthenticationL
         super.onResume();
         getLayerClient()
                 .registerAuthenticationListener(this);
+        getLayerClient().registerDataObserver(this);
                 //.registerConnectionListener(this)
-                //.registerEventListener(this);
         refresh();
     }
 
@@ -170,8 +173,8 @@ public class AppSettingsActivity extends BaseActivity implements AuthenticationL
     protected void onPause() {
         getLayerClient()
                 .unregisterAuthenticationListener(this);
+        getLayerClient().unregisterDataObserver(this);
                 //.unregisterConnectionListener(this)
-                //.unregisterEventListener(this);
         super.onPause();
     }
 
@@ -301,8 +304,12 @@ public class AppSettingsActivity extends BaseActivity implements AuthenticationL
 //    }
 
     @Override
-    public void onChangeEvent(LayerChangeEvent layerChangeEvent) {
+    public void onDataChanged(LayerChangeEvent layerChangeEvent) {
         refresh();
+    }
+
+    @Override
+    public void onDataRequestCompleted(LayerDataRequest request, LayerObject object) {
     }
 
     @Override

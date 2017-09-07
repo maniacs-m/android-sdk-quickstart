@@ -19,6 +19,7 @@ import com.layer.sdk.LayerDataObserver;
 import com.layer.sdk.LayerDataRequest;
 import com.layer.sdk.LayerObjectRequest;
 import com.layer.sdk.LayerQueryRequest;
+import com.layer.sdk.changes.LayerChangeEvent;
 import com.layer.sdk.messaging.Identity;
 import com.layer.sdk.messaging.LayerObject;
 import com.layer.sdk.query.Predicate;
@@ -170,7 +171,7 @@ public class SelectParticipantsActivity extends BaseActivity {
         }
 
         @Override
-        public void onDataChanged(LayerObject object) {
+        public void onDataChanged(LayerChangeEvent event) {
             // Ignored
         }
 

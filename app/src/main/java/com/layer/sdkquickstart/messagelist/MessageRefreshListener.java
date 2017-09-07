@@ -5,11 +5,14 @@ import android.os.Looper;
 import android.support.v4.widget.SwipeRefreshLayout;
 
 import com.layer.sdk.LayerClient;
+import com.layer.sdk.LayerDataObserver;
+import com.layer.sdk.LayerDataRequest;
 import com.layer.sdk.changes.LayerChangeEvent;
-import com.layer.sdk.listeners.LayerChangeEventListener;
 import com.layer.sdk.messaging.Conversation;
+import com.layer.sdk.messaging.LayerObject;
 
-public class MessageRefreshListener implements SwipeRefreshLayout.OnRefreshListener, LayerChangeEventListener {
+public class MessageRefreshListener implements SwipeRefreshLayout.OnRefreshListener,
+        LayerDataObserver {
     private static final int MESSAGE_SYNC_AMOUNT = 25;
 
     private Conversation mConversation;
@@ -32,7 +35,7 @@ public class MessageRefreshListener implements SwipeRefreshLayout.OnRefreshListe
     }
 
     @Override
-    public void onChangeEvent(LayerChangeEvent layerChangeEvent) {
+    public void onDataChanged(LayerChangeEvent layerChangeEvent) {
         new Handler(Looper.getMainLooper()).post(new Runnable() {
             @Override
             public void run() {
@@ -47,12 +50,16 @@ public class MessageRefreshListener implements SwipeRefreshLayout.OnRefreshListe
         });
     }
 
+    @Override
+    public void onDataRequestCompleted(LayerDataRequest request, LayerObject object) {
+    }
+
     public void registerLayerListener(LayerClient layerClient) {
-        layerClient.registerEventListener(this);
+        layerClient.registerDataObserver(this);
     }
 
     public void unregisterLayerListener(LayerClient layerClient) {
-        layerClient.unregisterEventListener(this);
+        layerClient.unregisterDataObserver(this);
     }
 
     private void disableAndStopRefreshing() {
